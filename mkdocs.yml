@@ -1,0 +1,32 @@
+site_name: Code Street Swift Styleguide
+
+theme:
+  name: material
+  favicon: assets/favicon.png
+  logo: assets/favicon.png
+  palette:
+    - scheme: default
+      primary: orange
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+
+extra_css:
+  - css/custom.css
