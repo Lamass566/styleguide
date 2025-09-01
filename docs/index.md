@@ -102,12 +102,8 @@ The order of types, variables, and functions in a source file, and the order of 
 
 What is important is that each file and type uses **some logical order**, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the type, as that would yield “chronological by date added” ordering, which is not a logical ordering.
 
-When deciding on the logical order of members, it can be helpful for readers and future writers (including yourself) to use `// MARK:` comments to provide descriptions for that grouping. These comments are also interpreted by Xcode and provide bookmarks in the source window’s navigation bar. (Likewise, `// MARK: - `, written with a hyphen before the description, causes Xcode to insert a divider before the menu item.) For example,
-
 ```swift
 class MovieRatingViewController: UITableViewController {
-
-  // MARK: - View controller lifecycle methods
 
   override func viewDidLoad() {
     // ...
@@ -116,8 +112,6 @@ class MovieRatingViewController: UITableViewController {
   override func viewWillAppear(_ animated: Bool) {
     // ...
   }
-
-  // MARK: - Movie rating manipulation methods
 
   @objc private func ratingStarWasTapped(_ sender: UIButton?) {
     // ...
