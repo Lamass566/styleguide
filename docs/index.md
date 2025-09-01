@@ -200,7 +200,7 @@ Wrapping the body of a single-statement block onto its own line is always allowe
 
 **Terminology note:** *Line-wrapping* is the activity of dividing code into multiple lines that might otherwise legally occupy a single line.
 
-For the purposes of Google Swift style, many declarations (such as type declarations and function declarations) and other expressions (like function calls) can be partitioned into *breakable* units that are separated by *unbreakable* delimiting token sequences.
+For the purposes of Swift style, many declarations (such as type declarations and function declarations) and other expressions (like function calls) can be partitioned into *breakable* units that are separated by *unbreakable* delimiting token sequences.
 
 As an example, consider the following complex function declaration, which needs to be line-wrapped:
 ```swift
@@ -216,7 +216,7 @@ This declaration is split as follows (scroll horizontally if necessary to see th
 
 `}`
 
-Using these concepts, the cardinal rules of Google Swift style for line-wrapping are:
+Using these concepts, the cardinal rules of Swift style for line-wrapping are:
 1. If the entire declaration, statement, or expression fits on one line, then do that.
 2. Comma-delimited lists are only laid out in one direction: horizontally or vertically. In other words, all elements must fit on the same line, or each element must be on its own line. A horizontally-oriented list does not contain any line breaks, even before the first element or after the last element. Except in control flow statements, a vertically-oriented list contains a line break before the first element and after each element.
 3. A continuation line starting with an unbreakable token sequence is indented at the same level as the original line.
