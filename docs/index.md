@@ -182,9 +182,9 @@ There is **at most** one statement per line, and each statement is followed by a
 guard let value = value else { return 0 }
 defer { file.close() }
 switch someEnum {
-case .first: return 5
-case .second: return 10
-case .third: return 20
+    case .first: return 5
+    case .second: return 10
+    case .third: return 20
 }
 let squares = numbers.map { $0 * $0 }
 var someProperty: Int {
@@ -764,28 +764,38 @@ With the exception of tuple destructuring, every `let` or `var` statement (wheth
     ```
 ### Switch Statements
 
-Сase statements are indented one level (+4 spaces) from the switch statement to which they belong. The statements inside the case blocks are then indented one more level.
-    
+- In multi-line cases, case statements are aligned with switch (no extra indentation).
+- In single-line cases, case statements are indented one level (+4 spaces) from switch.
+- The body of a case in multi-line format is indented +4 spaces from the case.
+- Use single-line case only if the body is short (≈ 40 characters or less).
+- The 40-character limit is approximate — developers may decide to switch to multi-line for better readability even with fewer characters.
+
 !!! success "GOOD"
     ```swift
     switch order {
-        case .ascending:
-            print("Ascending")
-        case .descending:
-            print("Descending")
-        case .same:
-            print("Same")
+        case .ascending: print("Ascending")
+        case .descending: print("Descending")
+        case .same: print("Same")
+    }
+    
+    switch order {
+    case .ascending:
+        print("This is a much longer statement that should be split")
+        log("Another statement inside the same case")
+    case .descending:
+        doSomething()
+        doSomethingElse()
+    case .same:
+        print("Same")
     }
     ```
 !!! danger "AVOID"
     ```swift
     switch order {
-    case .ascending:
-        print("Ascending")
-    case .descending:
-        print("Descending")
-    case .same:
-        print("Same")
+        case .ascending:
+            print("Wrong extra indentation")
+        case .descending:
+            print("Also wrong")
     }
     
     switch order {
@@ -1531,33 +1541,33 @@ When multiple cases of a switch would execute the same statements, the case patt
 !!! success "GOOD"
     ```swift
     switch value {
-        case 1:
-            print("one")
-        case 2...4:
-            print("two to four")
-        case 5, 7:
-            print("five or seven")
-        default:
-            break
+    case 1:
+        print("one")
+    case 2...4:
+        print("two to four")
+    case 5, 7:
+        print("five or seven")
+    default:
+        break
     }
     ```
 !!! danger "AVOID"
     ```swift
     switch value {
-        case 1:
-            print("one")
-        case 2:
-            fallthrough
-        case 3:
-            fallthrough
-        case 4:
-            print("two to four")
-        case 5:
-            fallthrough
-        case 7:
-            print("five or seven")
-        default:
-            break
+    case 1:
+        print("one")
+    case 2:
+        fallthrough
+     case 3:
+        fallthrough
+    case 4:
+        print("two to four")
+    case 5:
+        fallthrough
+    case 7:
+        print("five or seven")
+    default:
+        break
     }
     ```
 In other words, there is never a case whose body contains only the fallthrough statement. Cases containing additional statements which then fallthrough to the next case are permitted.
@@ -1571,8 +1581,8 @@ The let and var keywords are placed individually in front of each element in a p
     // introduce a new binding rather than to match against the value of a
     // local variable.
     switch DataPoint.labeled("hello", 100) {
-        case .labeled(let label, let value):
-            // ...
+    case .labeled(let label, let value):
+        // ...
     }
     ```
 !!! danger "AVOID"
@@ -1580,8 +1590,8 @@ The let and var keywords are placed individually in front of each element in a p
     // `let` distributes across the entire pattern, shadowing the local `label`
     // variable with a new binding that applies to any string value.
     switch DataPoint.labeled("hello", 100) {
-        case let .labeled(label, value):
-            // ...
+    case let .labeled(label, value):
+        // ...
     }
     ```
 Labels of tuple arguments and enum associated values are omitted when binding a value to a variable with the same name as the label.
@@ -1589,20 +1599,20 @@ Labels of tuple arguments and enum associated values are omitted when binding a 
 !!! success "GOOD"
     ```swift
     switch treeNode {
-        case .subtree(let left, let right):
-          // ...
-        case .leaf(let element):
-          // ...
-        }
+    case .subtree(let left, let right):
+        // ...
+    case .leaf(let element):
+        // ...
+    }
     ```
 !!! danger "AVOID"
     ```swift
     // Including the labels adds redundant noise.
     switch treeNode {
-        case .subtree(left: let left, right: let right):
-            // ...
-        case .leaf(element: let element):
-            // ...
+    case .subtree(left: let left, right: let right):
+        // ...
+    case .leaf(element: let element):
+        // ...
     }
     ```
 Tuple Patterns
