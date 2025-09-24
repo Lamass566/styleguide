@@ -103,23 +103,24 @@ The order of types, variables, and functions in a source file, and the order of 
 What is important is that each file and type uses **some logical order**, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the type, as that would yield “chronological by date added” ordering, which is not a logical ordering.
 
 ```swift
-class MovieRatingViewController: UITableViewController {
+class DataManager {
+    private var cache: [String: Data] = [:]
+    let fileManager = FileManager.default
 
-  override func viewDidLoad() {
-    // ...
-  }
+    init() {
+        // ...
+    }
 
-  override func viewWillAppear(_ animated: Bool) {
-    // ...
-  }
+    func loadData(for key: String) -> Data? {
+        if let cachedData = cache[key] {
+            return cachedData
+        }
+        return loadDataFromFile(named: key)
+    }
 
-  @objc private func ratingStarWasTapped(_ sender: UIButton?) {
-    // ...
-  }
-
-  @objc private func criticReviewWasTapped(_ sender: UIButton?) {
-    // ...
-  }
+    private func loadDataFromFile(named fileName: String) -> Data? {
+        return nil
+    }
 }
 ```
 
@@ -137,7 +138,7 @@ Extensions can be used to organize functionality of a type across multiple “un
 
 ### Column Limit
 
-Swift code has a column limit of 100 characters. Except as noted below, any line that would exceed this limit must be line-wrapped as described in [Line-Wrapping](#line-wrapping).
+Swift code has a column limit of 200 characters. Except as noted below, any line that would exceed this limit must be line-wrapped as described in [Line-Wrapping](#line-wrapping).
 
 **Exceptions:**
 * Lines where obeying the column limit is not possible without breaking a meaningful unit of text that should not be broken (for example, a long URL in a comment).
@@ -180,18 +181,24 @@ In other words, the only location where a semicolon may appear is inside a strin
 There is **at most** one statement per line, and each statement is followed by a line break, except when the line ends with a block that also contains zero or one statements.
 ```swift
 guard let value = value else { return 0 }
+
 defer { file.close() }
+
 switch someEnum {
-    case .first: return 5
-    case .second: return 10
-    case .third: return 20
+    case .first: 5
+    case .second: 10
+    case .third: 20
 }
+
 let squares = numbers.map { $0 * $0 }
+
 var someProperty: Int {
-  get { return otherObject.property }
+  get { otherObject.property }
   set { otherObject.property = newValue }
 }
-var someProperty: Int { return otherObject.somethingElse() }
+
+var someProperty: Int { otherObject.somethingElse() }
+
 required init?(coder aDecoder: NSCoder) { fatalError("no coder") }
 ```
 Wrapping the body of a single-statement block onto its own line is always allowed. Exercise best judgment when deciding whether to place a conditional statement and its body on the same line. For example, single line conditionals work well for early-return and basic cleanup tasks, but less so when the body contains a function call with significant logic. When in doubt, write it as a multi-line statement.
@@ -220,21 +227,21 @@ Using these concepts, the cardinal rules of Swift style for line-wrapping are:
 1. If the entire declaration, statement, or expression fits on one line, then do that.
 2. Comma-delimited lists are only laid out in one direction: horizontally or vertically. In other words, all elements must fit on the same line, or each element must be on its own line. A horizontally-oriented list does not contain any line breaks, even before the first element or after the last element. Except in control flow statements, a vertically-oriented list contains a line break before the first element and after each element.
 3. A continuation line starting with an unbreakable token sequence is indented at the same level as the original line.
-4. A continuation line that is part of a vertically-oriented comma-delimited list is indented exactly +2 from the original line.
-5. When an open curly brace (`{`) follows a line-wrapped declaration or expression, it is on the same line as the final continuation line unless that line is indented at +2 from the original line. In that case, the brace is placed on its own line, to avoid the continuation lines from blending visually with the body of the subsequent block.
+4. A continuation line that is part of a vertically-oriented comma-delimited list is indented exactly +4 from the original line.
+5. When an open curly brace (`{`) follows a line-wrapped declaration or expression, it is on the same line as the final continuation line unless that line is indented at +4 from the original line. In that case, the brace is placed on its own line, to avoid the continuation lines from blending visually with the body of the subsequent block.
 
 !!! success "GOOD"
     ```swift
     public func index<Elements: Collection, Element>(
-      of element: Element,
-      in collection: Elements) -> Elements.Index?
+        of element: Element,
+        in collection: Elements) -> Elements.Index?
     where
-      Elements.Element == Element,
-      Element: Equatable
+        Elements.Element == Element,
+        Element: Equatable
     {
-      for current in elements {
-        // ...
-      }
+        for current in elements {
+            // ...
+        }
     }
     ```
 
@@ -242,14 +249,14 @@ Using these concepts, the cardinal rules of Swift style for line-wrapping are:
 !!! danger "AVOID"
     ```swift
     public func index<Elements: Collection, Element>(
-      of element: Element,
-      in collection: Elements) -> Elements.Index?
+        of element: Element,
+        in collection: Elements) -> Elements.Index?
     where
-      Elements.Element == Element,
-      Element: Equatable {
-      for current in elements {
-        // ...
-      }
+        Elements.Element == Element,
+        Element: Equatable {
+        for current in elements {
+            // ...
+        }
     }
     ```
 
@@ -278,41 +285,41 @@ This line-wrapping style ensures that the different parts of a declaration are *
 Applying the rules above from left to right gives us the following line-wrapping:
 ```swift
 public func index<Elements: Collection, Element>(
-  of element: Element,
-  in collection: Elements) -> Elements.Index? where Elements.Element == Element, Element: Equatable {
-  for current in elements {
-    // ...
-  }
+    of element: Element,
+    in collection: Elements) -> Elements.Index? where Elements.Element == Element, Element: Equatable {
+    for current in elements {
+        // ...
+    }
 }
 ```
 Function declarations in protocols that are terminated with a closing parenthesis (`)`) may place the parenthesis on the same line as the final argument *or* on its own line.
 
 ```swift
 public protocol ContrivedExampleDelegate {
-  func contrivedExample(
-    _ contrivedExample: ContrivedExample,
-    willDoSomethingTo someValue: SomeValue)
+    func contrivedExample(
+        _ contrivedExample: ContrivedExample,
+        willDoSomethingTo someValue: SomeValue)
 }
 ```
 
 ```swift
 public protocol ContrivedExampleDelegate {
-  func contrivedExample(
-    _ contrivedExample: ContrivedExample,
-    willDoSomethingTo someValue: SomeValue
-  )
+    func contrivedExample(
+        _ contrivedExample: ContrivedExample,
+        willDoSomethingTo someValue: SomeValue
+    )
 }
 ```
 If types are complex and/or deeply nested, individual elements in the arguments/constraints lists and/or the return type may also need to be wrapped. In these rare cases, the same line-wrapping rules apply to those parts as apply to the declaration itself.
 
 ```swift
 public func performanceTrackingIndex<Elements: Collection, Element>(
-  of element: Element,
-  in collection: Elements) -> (
-  Element.Index?,
-  PerformanceTrackingIndexStatistics.Timings,
-  PerformanceTrackingIndexStatistics.SpaceUsed) {
-  // ...
+    of element: Element,
+    in collection: Elements) -> (
+    Element.Index?,
+    PerformanceTrackingIndexStatistics.Timings,
+    PerformanceTrackingIndexStatistics.SpaceUsed) {
+        // ...
 }
 ```
 However, **typealiases or some other means are often a better way to simplify complex declarations whenever possible.**
@@ -369,7 +376,7 @@ where
 ```
 #### Function Calls
 
-When a function call is line-wrapped, each argument is written on its own line, indented +2 from the original line.
+When a function call is line-wrapped, each argument is written on its own line, indented +4 from the original line.
 
 As with function declarations, if the function call terminates its enclosing statement and ends with a closing parenthesis (`)`) (that is, it has no trailing closure), then the parenthesis may be placed *either* on the same line as the final argument *or* on its own line.
 
@@ -389,56 +396,15 @@ let index = index(
 If the function call ends with a trailing closure and the closure’s signature must be wrapped, then place it on its own line and wrap the argument list in parentheses to distinguish it from the body of the closure below it.
 
 ```swift
-someAsynchronousAction.execute(withDelay: howManySeconds, context: actionContext) {
-  (context, completion) in
-  doSomething(withContext: context)
-  completion()
+someAsynchronousAction.execute(withDelay: howManySeconds, context: actionContext) { context in
+    doSomething(withContext: context)
 }
 ```
-#### Control Flow Statements
 
-When a control flow statement (such as `if`, `guard`, `while`, or `for`) is wrapped, the first continuation line is indented to the same position as the token following the control flow keyword. Additional continuation lines are indented at that same position if they are syntactically parallel elements, or in +2 increments from that position if they are syntactically nested.
-
-The open brace (`{`) preceding the body of the control flow statement can either be placed on the same line as the last continuation line or on the next line, at the same indentation level as the beginning of the statement. For `guard` statements, the `else {` must be kept together, either on the same line or on the next line.
-```swift
-if aBooleanValueReturnedByAVeryLongOptionalThing() &&
-   aDifferentBooleanValueReturnedByAVeryLongOptionalThing() &&
-   yetAnotherBooleanValueThatContributesToTheWrapping() {
-  doSomething()
-}
-if aBooleanValueReturnedByAVeryLongOptionalThing() &&
-   aDifferentBooleanValueReturnedByAVeryLongOptionalThing() &&
-   yetAnotherBooleanValueThatContributesToTheWrapping()
-{
-  doSomething()
-}
-if let value = aValueReturnedByAVeryLongOptionalThing(),
-   let value2 = aDifferentValueReturnedByAVeryLongOptionalThing() {
-  doSomething()
-}
-if let value = aValueReturnedByAVeryLongOptionalThing(),
-   let value2 = aDifferentValueReturnedByAVeryLongOptionalThingThatForcesTheBraceToBeWrapped()
-{
-  doSomething()
-}
-guard let value = aValueReturnedByAVeryLongOptionalThing(),
-      let value2 = aDifferentValueReturnedByAVeryLongOptionalThing() else {
-  doSomething()
-}
-guard let value = aValueReturnedByAVeryLongOptionalThing(),
-      let value2 = aDifferentValueReturnedByAVeryLongOptionalThing()
-else {
-  doSomething()
-}
-for element in collection
-    where element.happensToHaveAVeryLongPropertyNameThatYouNeedToCheck {
-  doSomething()
-}
-```
 #### Other Expressions
-When line-wrapping other expressions that are not function calls (as described above), the second line (the one immediately following the first break) is indented exactly +2 from the original line.
+When line-wrapping other expressions that are not function calls (as described above), the second line (the one immediately following the first break) is indented exactly +4 from the original line.
 
-When there are multiple continuation lines, indentation may be varied in increments of +2 as needed. In general, two continuation lines use the same indentation level if and only if they begin with syntactically parallel elements. However, if there are many continuation lines caused by long wrapped expressions, consider splitting them into multiple statements using temporary variables when possible.
+When there are multiple continuation lines, indentation may be varied in increments of +4 as needed. In general, two continuation lines use the same indentation level if and only if they begin with syntactically parallel elements. However, if there are many continuation lines caused by long wrapped expressions, consider splitting them into multiple statements using temporary variables when possible.
 
 !!! success "GOOD"
     ```swift
@@ -807,7 +773,7 @@ With the exception of tuple destructuring, every `let` or `var` statement (wheth
 
 ### Enum Naming
 The naming convention for enums depends on their role. The primary rule is to use singular names for enums that define a type, but plural names are acceptable when an enum is used as a namespace.
-The Main Rule: Singular for Types
+**The Main Rule: Singular for Types**
 When an enum is used to define a type with distinct states or values, its name must be singular.
 
 Think of it this way: the type is Direction, and a variable of that type can hold one of its values, such as .north. We don't write let myDirection: Directions.
@@ -884,23 +850,6 @@ In general, there is only one `case` per line in an `enum`. The comma-delimited 
         case comma, semicolon, identifier(String)
     }
     ```
-When all cases of an `enum` must be `indirect`, the `enum` itself is declared `indirect` and the keyword is omitted on the individual cases.
-
-!!! success "GOOD"
-    ```swift
-    public indirect enum DependencyGraphNode {
-        case userDefined(dependencies: [DependencyGraphNode])
-        case synthesized(dependencies: [DependencyGraphNode])
-    }
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    public enum DependencyGraphNode {
-        indirect case userDefined(dependencies: [DependencyGraphNode])
-        indirect case synthesized(dependencies: [DependencyGraphNode])
-    }
-    ```
 
 When an `enum` case does not have associated values, empty parentheses are never present.
 
@@ -920,17 +869,15 @@ When an `enum` case does not have associated values, empty parentheses are never
     ```
 The cases of an enum must follow a logical ordering that the author could explain if asked. If there is no obviously logical ordering, use a lexicographical ordering based on the cases’ names.
 
-In the following example, the cases are arranged in numerical order based on the underlying HTTP status code and blank lines are used to separate groups.
+In the following example, the cases are arranged in numerical order based on the underlying HTTP status code.
 ```swift
 public enum HTTPStatus: Int {
     case ok = 200
-
     case badRequest = 400
     case notAuthorized = 401
     case paymentRequired = 402
     case forbidden = 403
     case notFound = 404
-
     case internalServerError = 500
 }
 ```
@@ -980,10 +927,10 @@ If a function call has multiple closure arguments, then **none** are called usin
     UIView.animate(
         withDuration: 0.5,
         animations: {
-        // ...
+            // ...
         },
         completion: { finished in
-        // ...
+            // ...
         })
     ```
 !!! danger "AVOID"
@@ -991,10 +938,40 @@ If a function call has multiple closure arguments, then **none** are called usin
     UIView.animate(
         withDuration: 0.5,
         animations: {
-        // ...
+            // ...
         }) { finished in
-        // ...
+            // ...
         }
+    ```
+
+If a function call has multiple closure arguments, use multiple trailing closure syntax. The first trailing closure is written without its argument label; subsequent trailing closures must include their argument labels.
+
+This modern syntax (available since Swift 5.3) is the preferred, idiomatic style as it improves readability and makes the call site resemble a native Swift control flow statement.
+
+!!! success "GOOD"
+    ```swift
+    // Use modern multiple trailing closure syntax.
+    // The code reads like a native control flow statement.
+    UIView.animate(withDuration: 0.5) {
+        // ...
+    } completion: {  finished in
+        // ...
+    }
+    ```
+
+!!! danger "AVOID"
+    ```swift
+    // Avoid nesting multiple closures inside the parentheses.
+    // This style is verbose and considered outdated.
+    UIView.animate(
+        withDuration: 0.5,
+        animations: {
+            // ...
+        },
+        completion: { finished in
+            // ...
+        }
+    )
     ```
 
 If a function has a single closure argument and it is the final argument, then it is **always** called using trailing closure syntax, except in the following cases to resolve ambiguity or parsing errors:
@@ -1034,14 +1011,14 @@ When a function called with trailing closure syntax takes no other arguments, em
 
 ### Trailing Commas
 
-Trailing commas in array and dictionary literals are **required** when each element is placed on its own line. Doing so produces cleaner diffs when items are added to those literals later.
+Trailing commas in array and dictionary literals are forbidden. The last element in a multi-line literal must not have a comma following it.
 
 !!! success "GOOD"
     ```swift
     let configurationKeys = [
         "bufferSize",
         "compression",
-        "encoding",
+        "encoding"
     ]
     ```
 !!! danger "AVOID"
@@ -1049,7 +1026,7 @@ Trailing commas in array and dictionary literals are **required** when each elem
     let configurationKeys = [
         "bufferSize",
         "compression",
-        "encoding"
+        "encoding",
     ]
     ```
 ### Numeric Literals
@@ -1076,14 +1053,6 @@ Parameterized attributes (such as `@availability(...)` or `@objc(...)`) are each
         // ...
     }
     ```
-
-Attributes without parameters (for example, `@objc` without arguments, `@IBOutlet`, or `@NSManaged`) are lexicographically ordered and **may** be placed on the same line as the declaration if and only if they would fit on that line without requiring the line to be rewrapped. If placing an attribute on the same line as the declaration would require a declaration to be wrapped that previously did not need to be wrapped, then the attribute is placed on its own line.
-```swift
-public class MyViewController: UIViewController {
-  @IBOutlet private var tableView: UITableView!
-}
-```
----
 
 ## Naming
 
@@ -1183,26 +1152,6 @@ Like other variables, global constants are `lowerCamelCase`. Hungarian notation,
     let gSecondsPerMinute = 60
     let SECONDS_PER_MINUTE = 60
     ```
-### Delegate Methods
-Methods on delegate protocols and delegate-like protocols (such as data sources) are named using the linguistic syntax described below, which is inspired by Cocoa’s protocols.
-
-The term “delegate’s source object” refers to the object that invokes methods on the delegate. For example, a `UITableView` is the source object that invokes methods on the `UITableViewDelegate` that is set as the view’s `delegate` property.
-
-1. All methods take the delegate’s source object as the first argument.
-2. For methods that take the delegate’s source object as their **only** argument:
-* If the method returns `Void` (such as those used to notify the delegate that an event has occurred), then the method’s base name is the **delegate’s source type** followed by an **indicative verb phrase** describing the event. The argument is **unlabeled**.
-`func scrollViewDidBeginScrolling(_ scrollView: UIScrollView)`
-* If the method returns `Bool` (such as those that make an assertion about the delegate’s source object itself), then the method’s name is the **delegate’s source type** followed by an **indicative or conditional verb phrase** describing the assertion. The argument is **unlabeled**.
-`func scrollViewShouldScrollToTop(_ scrollView: UIScrollView) -> Bool`
-* If the method returns some other value (such as those querying for information about a property of the delegate’s source object), then the method’s base name is a **noun phrase** describing the property being queried. The argument is **labeled with a preposition or phrase with a trailing preposition** that appropriately combines the noun phrase and the delegate’s source object.
-`func numberOfSections(in scrollView: UIScrollView) -> Int`
-3. For methods that take **additional** arguments after the delegate’s source object, the method’s base name is the **delegate’s source type by itself** and the first argument is **unlabeled**. Then:
-* If the method returns `Void`, the second argument is **labeled with an indicative verb phrase** describing the event that has the argument as its **direct object or prepositional object,** and any other arguments (if present) provide further context.
-`func tableView(_ tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAt indexPath: IndexPath)`
-* If the method returns `Bool`, the second argument is **labeled with an indicative or conditional verb phrase** that describes the return value in terms of the argument, and any other arguments (if present) provide further context.
-`func tableView(_ tableView: UITableView, shouldSpringLoadRowAt indexPath: IndexPath, with context: UISpringLoadedInteractionContext) -> Bool`
-* If the method returns some other value, the second argument is **labeled with a noun phrase and trailing preposition** that describes the return value in terms of the argument, and any other arguments (if present) provide further context.
-`func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat`
 
 ## Programming Practices
 Common themes among the rules in this section are: avoid redundancy, avoid ambiguity, and prefer implicitness over explicitness unless being explicit improves readability and/or reduces ambiguity.
@@ -1419,28 +1368,6 @@ return SomeEnum(rawValue: value)!
 ```
 **Exception:** Force-unwraps are allowed in unit tests and test-only code without additional documentation. This keeps such code free of unnecessary control flow. In the event that `nil` is unwrapped or a cast operation is to an incompatible type, the test will fail which is the desired result.
 
-### Implicitly Unwrapped Optionals
-
-Implicitly unwrapped optionals are inherently unsafe and should be avoided whenever possible in favor of non-optional declarations or regular `Optional` types. Exceptions are described below.
-
-User-interface objects whose lifetimes are based on the UI lifecycle instead of being strictly based on the lifetime of the owning object are allowed to use implicitly unwrapped optionals. Examples of these include `@IBOutlet` properties connected to objects in a XIB file or storyboard, properties that are initialized externally like in the `prepareForSegue` implementation of a calling view controller, and properties that are initialized elsewhere during a class’s life cycle, like views in a view controller’s `viewDidLoad` method. Making such properties regular optionals can put too much burden on the user to unwrap them because they are guaranteed to be non-nil and remain that way once the objects are ready for use.
-```swift
-class SomeViewController: UIViewController {
-  @IBOutlet var button: UIButton!
-
-  override func viewDidLoad() {
-    populateLabel(for: button)
-  }
-
-  private func populateLabel(for button: UIButton) {
-    // ...
-  }
-}
-```
-Implicitly unwrapped optionals can also surface in Swift code when using Objective-C APIs that lack the appropriate nullability attributes. If possible, coordinate with the owners of that code to add those annotations so that the APIs are imported cleanly into Swift. If this is not possible, try to keep the footprint of those implicitly unwrapped optionals as small as possible in your Swift code; that is, do not propagate them through multiple layers of your own abstractions.
-
-Implicitly unwrapped optionals are also allowed in unit tests. This is for reasons similar to the UI object scenario above—the lifetime of test fixtures often begins not in the test’s initializer but in the `setUp()` method of a test so that they can be reset before the execution of each test.
-
 ### Access Levels
 
 Omitting an explicit access level is permitted on declarations. For top-level declarations, the default access level is `internal`. For nested declarations, the default access level is the lesser of `internal` and the access level of the enclosing declaration.
@@ -1625,48 +1552,53 @@ When multiple cases of a switch would execute the same statements, the case patt
 In other words, there is never a case whose body contains only the fallthrough statement. Cases containing additional statements which then fallthrough to the next case are permitted.
 
 ### Pattern Matching
-The let and var keywords are placed individually in front of each element in a pattern that is being matched. The shorthand version of let/var that precedes and distributes across the entire pattern is forbidden because it can introduce unexpected behavior.
+The placement of let and var keywords in a pattern depends on the number of values being bound within that pattern.
+- For patterns with a single binding, place the keyword directly before the variable (case .name(let value)).
+- For patterns with two or more bindings, use the shorthand version where the keyword precedes the entire pattern (case let .name(value1, value2)).
+
+This approach maintains clarity for simple, single-value cases while reducing verbosity and repetition in more complex cases with multiple values.
 
 !!! success "GOOD"
     ```swift
-    // Writing `let` before each individual binding clarifies that the intent is to
-    // introduce a new binding rather than to match against the value of a
-    // local variable.
-    switch DataPoint.labeled("hello", 100) {
-    case .labeled(let label, let value):
-        // ...
+    switch serverResponse {
+    case .success(let data):
+        print("Received (data.count) bytes.")
+    case let .failure(code, message):
+        print("Error \(code): \(message)")
+    case .notModified:
+        break
     }
     ```
 !!! danger "AVOID"
     ```swift
-    // `let` distributes across the entire pattern, shadowing the local `label`
-    // variable with a new binding that applies to any string value.
-    switch DataPoint.labeled("hello", 100) {
-    case let .labeled(label, value):
-        // ...
+    switch serverResponse {
+    case let .success(data):
+        print("Received (data.count) bytes.")
+    case .failure(let code, let message):
+        print("Error \(code): \(message)")
+    case .notModified:
+        break
     }
     ```
 Labels of tuple arguments and enum associated values are omitted when binding a value to a variable with the same name as the label.
- 
+
 !!! success "GOOD"
     ```swift
-    switch treeNode {
-    case .subtree(let left, let right):
-        // ...
-    case .leaf(let element):
-        // ...
+    switch treeNode { 
+        case .subtree(let left, let right): // ... 
+        case .leaf(let element): // ... 
     }
     ```
+
 !!! danger "AVOID"
     ```swift
     // Including the labels adds redundant noise.
     switch treeNode {
-    case .subtree(left: let left, right: let right):
-        // ...
-    case .leaf(element: let element):
-        // ...
+        case .subtree(left: let left, right: let right): // ...
+        case .leaf(element: let element): // ...
     }
     ```
+
 ### Tuple Patterns
 Assigning variables through a tuple pattern is only permitted if the left-hand side of the assignment is unlabeled.
 
@@ -1679,10 +1611,10 @@ Assigning variables through a tuple pattern is only permitted if the left-hand s
     // Labels on the left-hand side resemble type annotations and can be confusing.
     let (x: a, y: b) = (y: 4, x: 5.0)
 
-    // This declares two variables: `Int` (which is a `Double`) and `Double` (which
-    // is an `Int`). `x` and `y` are not variables.
+    // This declares two variables: `Int` (which is a `Double`) and `Double` (which is an `Int`). `x` and `y` are not variables.
     let (x: Int, y: Double) = (y: 4, x: 5.0)
     ```
+    
 ### Numeric and String Literals
 When a literal is used to initialize a value of a type other than its default, specify the type explicitly.
 
@@ -1715,18 +1647,7 @@ When a literal is used to initialize a value of a type other than its default, s
     // This traps at runtime.
     let c = Character("ab")
     ```
-### Playground Literals
-The graphically-rendered playground literals (#colorLiteral, #imageLiteral, #fileLiteral) are forbidden in non-playground production code.
 
-!!! success "GOOD"
-    ```swift
-    let color = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    let color = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-    ```
 ### Trapping vs. Overflowing Arithmetic
 The standard (trapping-on-overflow) arithmetic operators (+, -, *) are used for most normal operations.
 
@@ -2013,7 +1934,7 @@ This practice leverages a modern Swift feature that reduces boilerplate and impr
     ```
 ### Ternary Operators
 
-When a ternary expression (? :) needs to be line-wrapped, a line break is inserted before both the ? and the :. The continuation lines containing these operators are indented exactly +2 from the original line.
+When a ternary expression (? :) needs to be line-wrapped, a line break is inserted before both the ? and the :. The continuation lines containing these operators are indented exactly +4 from the original line.
 
 This style ensures that all three parts of the expression—the condition, the true case, and the false case—are clearly separated and aligned, which greatly improves readability.
 
@@ -2038,60 +1959,7 @@ This style ensures that all three parts of the expression—the condition, the t
     let color = isEnabled ? .primary
         : .secondary.withAlphaComponent(0.5)
     ```
-
-### Omit Parentheses for Trailing Closures
-
-When a closure is the only argument passed to a function, you must use trailing closure syntax and omit the empty parentheses ().
-
-This is a key feature of Swift that makes code much cleaner and easier to read, especially when chaining multiple higher-order functions like map, filter, or sorted. The result looks less like a series of nested function calls and more like a declarative sequence of steps. 📜
-
-!!! success "GOOD"
-    ```swift
-    let scores = [95, 80, 65, 100, 78]
     
-    // GOOD: No parentheses are used for `.filter`, `.map`, or `.sorted`.
-    // The chain is clean and easy to follow.
-    let highScorers = scores
-        .filter { $0 > 80 }
-        .map { "Score: \($0)" }
-        .sorted { $0 > $1 }
-    ```
-!!! danger "AVOID"
-    ```swift
-    let scores = [95, 80, 65, 100, 78]
-    
-    // AVOID: This adds unnecessary visual noise. The empty parentheses `()`
-    // are redundant when the closure is the only argument.
-    let highScorersWithParens = scores
-        .filter() { $0 > 80 }
-        .map() { "Score: \($0)" }
-    
-    // AVOID: This older syntax, with the closure inside the parentheses,
-    // is much harder to read, especially when chained.
-    let oldSyntax = scores.filter({ $0 > 80 }).map({ "Score: \($0)" })
-    ```
-
-    Of course. Here is the rule for spacing in range operators, formatted for your style guide.
-
-### Spacing in Ranges
-Do not place spaces around range operators (... and ..<). These operators should adhere to their operands to be read as a single unit.
-
-!!! success "GOOD"
-    ```swift
-    let closedRange = 1...5
-    let halfOpenRange = 0..<10
-    
-    random(in: -60...60)
-    ```
-!!! danger "AVOID"
-    ```swift
-    // Avoid spaces around range operators.
-    let closedRange = 1 ... 5
-    let halfOpenRange = 0 ..< 10
-    
-    random(in: -60 ... 60)
-    ```
-
 ### Abbreviations in Names
 Type names (classes, structs, protocols, enums) must be fully spelled out. Avoid abbreviations to make the API as clear and self-documenting as possible. A type's name should fully describe its purpose without requiring a reader to guess what an abbreviation stands for.
 
@@ -2118,4 +1986,29 @@ However, property and local variable names may use common, contextually-clear ab
     
         // ...
     }
+    ```
+
+### Numeric Suffixes in Names
+Avoid appending arbitrary numbers to the names of types such as classes, structs, protocols, and enums. A type's name should describe its purpose or domain, not its sequence or version. If you need variants of a type, prefer more descriptive names or use generics.
+
+However, using numeric suffixes for properties or local variables is permissible when it is part of a well-defined, non-arbitrary sequence (e.g., coordinates, versioned assets, or mathematical components).
+
+!!! success "GOOD"
+    ```swift
+    struct LineSegment { 
+        var point1: CGPoint 
+        var point2: CGPoint 
+    }
+
+    let themeColor1: Color
+    let themeColor2: Color
+    ```
+
+!!! danger "AVOID"
+    ```swift
+    // AVOID: Type names should not be numbered. This creates confusion
+    // about the relationship between UserV1 and UserV2.
+    // Prefer a single User type with a version property, or use protocols.
+    class UserV1 { ... }
+    class UserV2 { ... }
     ```
