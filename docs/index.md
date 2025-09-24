@@ -804,6 +804,58 @@ With the exception of tuple destructuring, every `let` or `var` statement (wheth
     case .same:print("Same")
     }
     ```
+
+### Enum Naming
+The naming convention for enums depends on their role. The primary rule is to use singular names for enums that define a type, but plural names are acceptable when an enum is used as a namespace.
+The Main Rule: Singular for Types
+When an enum is used to define a type with distinct states or values, its name must be singular.
+
+Think of it this way: the type is Direction, and a variable of that type can hold one of its values, such as .north. We don't write let myDirection: Directions.
+
+!!! success "GOOD"
+    ```swift
+    // An enum as a type representing one state out of several.
+    enum NetworkState {
+        case connected
+        case disconnected
+        case connecting
+    }
+    
+    // An enum as a type representing a specific choice.
+    enum PaymentMethod {
+        case creditCard(String)
+        case cash
+        case crypto(address: String)
+    }
+    ```
+!!! danger "AVOID"
+    ```swift
+    // Avoid plural names for type names.
+    enum NetworkStates { ... }
+    
+    enum PaymentMethods { ... }
+    ```
+The Exception: Plural for Namespaces
+
+When a caseless enum is used as a namespace to group static constants, a plural name is appropriate and often preferred because it describes the group or collection of items stored within.
+
+!!! success "GOOD"
+    ```swift
+    // "Strings" is a logical group for string constants.
+    // "Images" is a collection of keys for images.
+    enum AppConstants {
+        enum Strings {
+            static let welcomeTitle = "Welcome!"
+            static let errorTitle = "Error"
+        }
+    
+        enum Images {
+            static let mainIcon = "app_icon"
+            static let placeholder = "user_placeholder"
+        }
+    }
+    ```
+    
 ### Enum Cases
 
 In general, there is only one `case` per line in an `enum`. The comma-delimited form may be used only when none of the cases have associated values or raw values, all cases fit on a single line, and the cases do not need further documentation because their meanings are obvious from their names.
@@ -1518,7 +1570,7 @@ This can be seen in the following examples; in the first, there is a clear progr
     ```
 A guard-continue statement can also be useful in a loop to avoid increased indentation when the entire body of the loop should only be executed in some cases (but see also the for-where discussion below.)
 
-for-where Loops
+### for-where Loops
 When the entirety of a for loop’s body would be a single if block testing a condition of the element, the test is placed in the where clause of the for statement instead.
 
 !!! success "GOOD"
@@ -1535,7 +1587,7 @@ When the entirety of a for loop’s body would be a single if block testing a co
         }
     }
     ```
-fallthrough in switch Statements
+### fallthrough in switch Statements
 When multiple cases of a switch would execute the same statements, the case patterns are combined into ranges or comma-delimited lists. Multiple case statements that do nothing but fallthrough to a case below are not allowed.
 
 !!! success "GOOD"
@@ -1572,7 +1624,7 @@ When multiple cases of a switch would execute the same statements, the case patt
     ```
 In other words, there is never a case whose body contains only the fallthrough statement. Cases containing additional statements which then fallthrough to the next case are permitted.
 
-Pattern Matching
+### Pattern Matching
 The let and var keywords are placed individually in front of each element in a pattern that is being matched. The shorthand version of let/var that precedes and distributes across the entire pattern is forbidden because it can introduce unexpected behavior.
 
 !!! success "GOOD"
@@ -1615,7 +1667,7 @@ Labels of tuple arguments and enum associated values are omitted when binding a 
         // ...
     }
     ```
-Tuple Patterns
+### Tuple Patterns
 Assigning variables through a tuple pattern is only permitted if the left-hand side of the assignment is unlabeled.
 
 !!! success "GOOD"
@@ -1631,7 +1683,7 @@ Assigning variables through a tuple pattern is only permitted if the left-hand s
     // is an `Int`). `x` and `y` are not variables.
     let (x: Int, y: Double) = (y: 4, x: 5.0)
     ```
-Numeric and String Literals
+### Numeric and String Literals
 When a literal is used to initialize a value of a type other than its default, specify the type explicitly.
 
 !!! success "GOOD"
@@ -1663,7 +1715,7 @@ When a literal is used to initialize a value of a type other than its default, s
     // This traps at runtime.
     let c = Character("ab")
     ```
-Playground Literals
+### Playground Literals
 The graphically-rendered playground literals (#colorLiteral, #imageLiteral, #fileLiteral) are forbidden in non-playground production code.
 
 !!! success "GOOD"
@@ -1675,7 +1727,7 @@ The graphically-rendered playground literals (#colorLiteral, #imageLiteral, #fil
     ```swift
     let color = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
     ```
-Trapping vs. Overflowing Arithmetic
+### Trapping vs. Overflowing Arithmetic
 The standard (trapping-on-overflow) arithmetic operators (+, -, *) are used for most normal operations.
 
 !!! success "GOOD"
@@ -1706,7 +1758,7 @@ Masking operations are permitted in domains that use modular arithmetic, such as
         return foo.hashValue + 31 * (bar.hashValue + 31 * baz.hashValue)
     }
     ```
-Documentation Comments
+### Documentation Comments
 General Format
 
 Documentation comments are written using the triple slash (///). Javadoc-style block comments (/** ... */) are not permitted.
@@ -1733,7 +1785,7 @@ Documentation comments are written using the triple slash (///). Javadoc-style b
       // ...
     }
     ```
-Single-Sentence Summary
+### Single-Sentence Summary
 
 Documentation comments begin with a brief single-sentence summary. Method summaries are verb phrases; property summaries are noun phrases.
 
@@ -1758,7 +1810,7 @@ Documentation comments begin with a brief single-sentence summary. Method summar
       // ...
     }
     ```
-Parameter, Returns, and Throws Tags
+### Parameter, Returns, and Throws Tags
 
 Use the singular - Parameter tag for a single argument. Use the plural - Parameters tag with a nested list for multiple arguments.
 
@@ -1784,4 +1836,286 @@ Use the singular - Parameter tag for a single argument. Use the plural - Paramet
     /// - Parameter command: The command to execute.
     /// - Parameter stdin: The string to use as standard input.
     func execute(command: String, stdin: String) -> String { ... }
+    ```
+    Of course. Here is a new rule formatted in the style of the provided document, ready to be added to the Programming Practices section.
+
+### Higher-Order Functions for Collections
+
+Prefer using higher-order functions like map, filter, reduce, and flatMap for common collection operations over constructing manual for-in loops. This practice leads to more declarative, concise, and readable code by clearly stating the transformation's intent rather than the step-by-step mechanics of its implementation. It also avoids the boilerplate of creating and mutating intermediate collections.
+
+Furthermore, for transformations that simply access a property of an element, you can use the even more concise KeyPath expression (\.propertyName). This further improves readability by directly referencing the property being mapped.
+
+!!! success "GOOD"
+    ```swift 
+    // The intent—transforming and filtering—is immediately clear.
+    let squaredEvens = numbers.map { $0 * $0 }.filter { $0 % 2 == 0 }
+    
+    // Using a KeyPath is the most direct way to extract properties.
+    let userNames = users.map(\.name)
+    ```
+
+!!! danger "AVOID"
+    ```swift  
+    // This imperative approach requires more code and mental overhead to understand. 
+    var squaredEvens: [Int] = []
+    
+    for number in numbers {
+        let squared = number * number if squared % 2 == 0 { squaredEvens.append(squared) } 
+    } 
+    ```
+    
+### Transforming Optionals with map and flatMap
+
+Prefer map and flatMap to perform transformations on optional values rather than using verbose if let or guard let statements. This approach produces more concise, declarative code by chaining the operation directly to the optional value itself.
+
+Use map when your transformation function returns a non-optional value. Use flatMap when your transformation function returns an Optional value; this prevents creating a nested optional (e.g., Int??).
+
+!!! success "GOOD"
+    ```swift
+    // 'map' is used because the transform returns a non-optional String.
+    let optionalNumber: Int? = 42
+    let optionalDescription = optionalNumber.map { "The number is ($0)" }
+    
+    // 'flatMap' is used because `Int(String)` returns an `Int?`.
+    let optionalString: String? = "123"
+    let optionalInt = optionalString.flatMap { Int($0) }
+    ```
+!!! danger "AVOID"
+    ```swift
+    // Unnecessarily verbose for a simple transformation.
+    let optionalNumber: Int? = 42
+    let optionalDescription: String?
+    
+    if let number = optionalNumber {
+        optionalDescription = "The number is (number)"
+    } else {
+        optionalDescription = nil
+    }
+    
+    // This guard statement adds boilerplate that `flatMap` handles automatically.
+    guard let string = optionalString else {
+        return nil
+    }
+    let optionalInt = Int(string)
+    ```
+    
+### Acronyms and Initialisms
+
+Names containing common acronyms and initialisms (such as URL, ID, API, or HTTP) should treat the acronym as a single word, keeping it fully capitalized. This applies to both UpperCamelCase type names and lowerCamelCase variable names. Avoid using mixed-case variants.
+
+This practice improves clarity by treating well-known acronyms as indivisible units, which is how developers mentally read them.
+
+!!! success "GOOD"
+    ```swift
+    var requestURL: URL
+    let userID: Int
+    let htmlContent: String
+    
+    struct APIClient {
+        func downloadHTML() { ... }
+    }
+    ```
+    
+!!! danger "AVOID"
+    ```swift
+    // Avoid mixed-case or partially-lowercased acronyms.
+    var requestUrl: URL
+    let userId: Int
+    let anHtmlDocument: String
+    
+    struct ApiClient {
+        func downloadHtml() { ... }
+    }
+    ```
+
+### Use Type Aliases for Clarity
+
+Actively use type aliases (typealias) to give simpler, more descriptive names to complex types. This is especially useful for tuples, closures, and generic types with multiple constraints. Using a type alias makes code more readable, self-documenting, and easier to maintain.
+
+A well-named type alias can express the purpose of a complex type, making function signatures and property declarations much clearer.
+
+!!! success "GOOD"
+    ```swift
+    // The type alias clearly defines the structure and purpose.
+    typealias HTTPResponse = (data: Data?, response: URLResponse?, error: Error?)
+    
+    func handle(response: HTTPResponse) {
+        response.data.map { data in
+            // ...
+        }
+    }
+    
+    typealias UserFetchCompletion = (Result<[User], APIError>) -> Void
+    
+    func fetchUsers(completion: @escaping UserFetchCompletion) {
+        // ...
+    }
+    ```
+!!! danger "AVOID"
+    ```swift
+    // The complex, inline tuple makes the function signature hard to read.
+    func handle(response: (data: Data?, response: URLResponse?, error: Error?)) {
+        // ...
+    }
+    
+    // The closure's purpose is not immediately clear from the signature.
+    func fetchUsers(completion: @escaping (Result<[User], APIError>) -> Void) {
+        // ...
+    }
+    ```
+### Implicit Returns
+
+You should omit the return keyword in functions, computed properties, and closures that are composed of a single expression. The return keyword should only be used when the compiler requires it, for instance, in bodies that contain multiple statements or other declarations.
+
+This practice leverages a modern Swift feature that reduces boilerplate and improves conciseness, making the code's intent clearer. 📜
+
+!!! success "GOOD"
+    ```swift
+    // For a single-line computed property
+    var isEnabled: Bool {
+        !items.isEmpty
+    }
+    
+    // For a single-expression function
+    func square(of number: Int) -> Int {
+        number * number
+    }
+    
+    // For a switch statement that is a single expression in a function
+    func color(for state: ConnectionState) -> UIColor {
+        switch state {
+            case .connected: .green
+            case .disconnected: .red
+            case .connecting: .yellow
+        }
+    }
+    ```
+!!! danger "AVOID"
+    ```swift
+    // The return keyword is redundant here.
+    var isEnabled: Bool {
+        return !items.isEmpty
+    }
+    
+    // The `return` keyword is unnecessary in a single-expression function.
+    func square(of number: Int) -> Int {
+        return number * number
+    }
+    
+    // Each case is a single expression, so `return` is not needed.
+    func color(for state: ConnectionState) -> UIColor {
+        switch state {
+            case .connected: return .green
+            case .disconnected: return .red
+            case .connecting: return .yellow
+        }
+    }
+    ```
+### Ternary Operators
+
+When a ternary expression (? :) needs to be line-wrapped, a line break is inserted before both the ? and the :. The continuation lines containing these operators are indented exactly +2 from the original line.
+
+This style ensures that all three parts of the expression—the condition, the true case, and the false case—are clearly separated and aligned, which greatly improves readability.
+
+!!! success "GOOD"
+    ```swift
+    let accessLevel = user.isAdministrator
+        ? "Administrator"
+        : "Standard User"
+    
+    let color = isEnabled
+        ? .primary
+        : .secondary.withAlphaComponent(0.5)
+    ```
+!!! danger "AVOID"
+    ```swift
+    // Placing operators at the end of the line makes it harder to scan.
+    let accessLevel = user.isAdministrator ?
+    "Administrator" :
+    "Standard User"
+    
+    // This inconsistent indentation is confusing.
+    let color = isEnabled ? .primary
+        : .secondary.withAlphaComponent(0.5)
+    ```
+
+### Omit Parentheses for Trailing Closures
+
+When a closure is the only argument passed to a function, you must use trailing closure syntax and omit the empty parentheses ().
+
+This is a key feature of Swift that makes code much cleaner and easier to read, especially when chaining multiple higher-order functions like map, filter, or sorted. The result looks less like a series of nested function calls and more like a declarative sequence of steps. 📜
+
+!!! success "GOOD"
+    ```swift
+    let scores = [95, 80, 65, 100, 78]
+    
+    // GOOD: No parentheses are used for `.filter`, `.map`, or `.sorted`.
+    // The chain is clean and easy to follow.
+    let highScorers = scores
+        .filter { $0 > 80 }
+        .map { "Score: \($0)" }
+        .sorted { $0 > $1 }
+    ```
+!!! danger "AVOID"
+    ```swift
+    let scores = [95, 80, 65, 100, 78]
+    
+    // AVOID: This adds unnecessary visual noise. The empty parentheses `()`
+    // are redundant when the closure is the only argument.
+    let highScorersWithParens = scores
+        .filter() { $0 > 80 }
+        .map() { "Score: \($0)" }
+    
+    // AVOID: This older syntax, with the closure inside the parentheses,
+    // is much harder to read, especially when chained.
+    let oldSyntax = scores.filter({ $0 > 80 }).map({ "Score: \($0)" })
+    ```
+
+    Of course. Here is the rule for spacing in range operators, formatted for your style guide.
+
+### Spacing in Ranges
+Do not place spaces around range operators (... and ..<). These operators should adhere to their operands to be read as a single unit.
+
+!!! success "GOOD"
+    ```swift
+    let closedRange = 1...5
+    let halfOpenRange = 0..<10
+    
+    random(in: -60...60)
+    ```
+!!! danger "AVOID"
+    ```swift
+    // Avoid spaces around range operators.
+    let closedRange = 1 ... 5
+    let halfOpenRange = 0 ..< 10
+    
+    random(in: -60 ... 60)
+    ```
+
+### Abbreviations in Names
+Type names (classes, structs, protocols, enums) must be fully spelled out. Avoid abbreviations to make the API as clear and self-documenting as possible. A type's name should fully describe its purpose without requiring a reader to guess what an abbreviation stands for.
+
+However, property and local variable names may use common, contextually-clear abbreviations (such as btn, img, mgr, config). This avoids excessive verbosity within the implementation where the context is already established.
+
+!!! success "GOOD"
+    ```swift
+    // The class name is fully spelled out for clarity.
+    struct UserProfile {
+        // Within the implementation, abbreviations for button color and manager are acceptable.
+        private var btnColor: Color
+        private let configManager: ConfigurationManager
+    
+        // ...
+    }
+    ```
+!!! danger "AVOID"
+    ```swift
+    // The class name is unclear due to abbreviations. What is "VC"? "Usr"? "Prof"?
+    struct UsrProfVC {
+        // The property name is unnecessarily long and verbose.
+        private var buttonBackgroundColor: Color
+        private let configurationManagerInstance: ConfigurationManager
+    
+        // ...
+    }
     ```
