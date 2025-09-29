@@ -195,68 +195,12 @@ required init?(coder aDecoder: NSCoder) { fatalError("no coder") }
 Wrapping the body of a single-statement block onto its own line is always allowed. Exercise best judgment when deciding whether to place a conditional statement and its body on the same line. For example, single line conditionals work well for early-return and basic cleanup tasks, but less so when the body contains a function call with significant logic. When in doubt, write it as a multi-line statement.
 
 ### Line-Wrapping
-
-**Terminology note:** *Line-wrapping* is the activity of dividing code into multiple lines that might otherwise legally occupy a single line.
-
-For the purposes of Swift style, many declarations (such as type declarations and function declarations) and other expressions (like function calls) can be partitioned into *breakable* units that are separated by *unbreakable* delimiting token sequences.
-
-As an example, consider the following complex function declaration, which needs to be line-wrapped:
-```swift
-public func index<Elements: Collection, Element>(of element: Element, in collection: Elements) -> Elements.Index? where Elements.Element == Element, Element: Equatable {
-  // ...
-}
-```
-This declaration is split as follows (scroll horizontally if necessary to see the full example). Unbreakable token sequences are indicated in orange; breakable sequences are indicated in blue.
-```swift
-public func index`<`Elements: Collection, Element`>`(of element: Element, in collection: Elements)` `->` `Elements.Index?` `where` `Elements.Element == Element, Element: Equatable` `{`
-
-  // ...
-
-}
-```
-Using these concepts, the cardinal rules of Swift style for line-wrapping are:
-* If the entire declaration, statement, or expression fits on one line, then do that.
-* Comma-delimited lists are only laid out in one direction: horizontally or vertically. In other words, all elements must fit on the same line, or each element must be on its own line. A horizontally-oriented list does not contain any line breaks, even before the first element or after the last element. Except in control flow statements, a vertically-oriented list contains a line break before the first element and after each element.
-* A continuation line starting with an unbreakable token sequence is indented at the same level as the original line.
-* A continuation line that is part of a vertically-oriented comma-delimited list is indented exactly +4 from the original line.
-* When an open curly brace (`{`) follows a line-wrapped declaration or expression, it is on the same line as the final continuation line unless that line is indented at +4 from the original line. In that case, the brace is placed on its own line, to avoid the continuation lines from blending visually with the body of the subsequent block.
-
-!!! success "GOOD"
-    ```swift
-    public func index<Elements: Collection, Element>(
-        of element: Element,
-        in collection: Elements) -> Elements.Index?
-    where
-        Elements.Element == Element,
-        Element: Equatable
-    {
-        for current in elements {
-            // ...
-        }
-    }
-    ```
-
-
-!!! danger "AVOID"
-    ```swift
-    public func index<Elements: Collection, Element>(
-        of element: Element,
-        in collection: Elements) -> Elements.Index?
-    where
-        Elements.Element == Element,
-        Element: Equatable {
-        for current in elements {
-            // ...
-        }
-    }
-    ```
-
 #### Function Declarations
 ```swift
-`modifiers func name(formal arguments)` `{`
-`modifiers func name(formal arguments) ->` `result` `{`
-`modifiers func name<generic arguments>(formal arguments) throws ->` `result` `{`
-`modifiers func name<generic arguments>(formal arguments) throws ->` `result` `where` `generic constraints` `{`
+`modifiers func name(formal arguments) { `//content` `}`
+`modifiers func name(formal arguments) -> result { `//content` `}`
+`modifiers func name<generic arguments>(formal arguments) throws -> result { `//content` `}`
+`modifiers func name<generic arguments>(formal arguments) throws -> result` `where` `generic constraints { `//content` `}`
 ```
 
 Applying the rules above from left to right gives us the following line-wrapping:
@@ -304,13 +248,6 @@ However, **typealiases or some other means are often a better way to simplify co
 #### Type and Extension Declarations
 
 The examples below apply equally to `class`, `struct`, `enum`, `extension`, and `protocol` (with the obvious exception that all but the first do not have superclasses in their inheritance list, but they are otherwise structurally similar).
-
-```swift
-`modifiers class Name` `{`
-`modifiers class Name:` `superclass and protocols` `{`
-`modifiers class Name<generic arguments>:` `superclass and protocols` `{`
-`modifiers class Name<generic arguments>:` `superclass and protocols` `where` `generic constraints` `{`
-```
 
 ```swift
 class MyClass:
