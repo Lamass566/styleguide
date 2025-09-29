@@ -1,54 +1,3 @@
-### Special Escape Sequences
-
-For any character that has a special escape sequence (`\t`, `\n`, `\r`, `\"`, `\'`, `\\`, and `\0`), that sequence is used rather than the equivalent Unicode (e.g., `\u{000a}`) escape sequence.
-
-### Invisible Characters and Modifiers
-
-Invisible characters, such as the zero width space and other control characters that do not affect the graphical representation of a string, are always written as Unicode escape sequences.
-
-Control characters, combining characters, and variation selectors that *do* affect the graphical representation of a string are not escaped when they are attached to a character or characters that they modify. If such a Unicode scalar is present in isolation or is otherwise not modifying another character in the same string, it is written as a Unicode escape sequence.
-
-The strings below are well-formed because the umlauts and variation selectors associate with neighboring characters in the string. The second example is in fact composed of *five* Unicode scalars, but they are unescaped because the specific combination is rendered as a single character.
-
-```swift
-let size = "Übergröße"
-let shrug = "🤷🏿‍️"
-```
-In the example below, the umlaut and variation selector are in strings by themselves, so they are escaped.
-```swift
-let diaeresis = "\u{0308}"
-let skinToneType6 = "\u{1F3FF}"
-```
-If the umlaut were included in the string literally, it would combine with the preceding quotation mark, impairing readability. Likewise, while most systems may render a standalone skin tone modifier as a block graphic, the example below is still forbidden because it is a modifier that is not modifying a character in the same string.
-!!! danger "AVOID"
-    ```swift
-    let diaeresis = "̈"
-    let skinToneType6 = "🏿"
-    ```
-
-### String Literals
-
-Unicode escape sequences (`\u{????}`) and literal code points (for example, `Ü`) outside the 7-bit ASCII range are never mixed in the same string.
-
-More specifically, string literals are either:
-* composed of a combination of Unicode code points written literally and/or single character escape sequences (such as `\t`, but *not* `\u{????}`), or
-* composed of 7-bit ASCII with any number of Unicode escape sequences and/or other escape sequences.
-
-The following example is correct because `\n` is allowed to be present among other Unicode code points.
-```swift
-let size = "Übergröße\n"
-```
-The following example is allowed because it follows the rules above, but it is **not preferred** because the text is harder to read and understand compared to the string above.
-```swift
-let size = "\u{00DC}bergr\u{00F6}\u{00DF}e\n"
-```
-The example below is forbidden because it mixes code points outside the 7-bit ASCII range in both literal form and in escaped form.
-!!! danger "AVOID"
-    ```swift
-    let size = "Übergr\u{00F6}\u{00DF}e\n"
-    ```
-**Aside:** Never make your code less readable simply out of fear that some programs might not handle non-ASCII characters properly. If that should happen, those programs are broken and must be fixed.
-
 ## Source File Structure
 
 ### File Comments
@@ -56,68 +5,48 @@ The example below is forbidden because it mixes code points outside the 7-bit AS
 Comments describing the contents of a source file are optional. They are discouraged for files that contain only a single abstraction (such as a class declaration)—in those cases, the documentation comment on the abstraction itself is sufficient and a file comment is only present if it provides additional useful information. File comments are allowed for files that contain multiple abstractions in order to document that grouping as a whole.
 
 ### Import Statements
+A source file imports exactly the top-level modules that it needs—nothing more and nothing less. Do not rely on transitive imports (e.g., that UIKit also imports Foundation).
 
-A source file imports exactly the top-level modules that it needs; nothing more and nothing less. If a source file uses definitions from both `UIKit` and `Foundation`, it imports both explicitly; it does not rely on the fact that some Apple frameworks transitively import others as an implementation detail.
+*Module Imports*
+Imports of whole modules are required over imports of individual declarations or submodules.
+* *Exception (Individual Declarations):* Importing individual declarations is permitted only when importing the whole module would pollute the global namespace (e.g., with C interfaces).
+* *Exception (Submodules):* Importing submodules is permitted only if the submodule provides functionality not available in the top-level module (e.g., UIKit.UIGestureRecognizerSubclass).
 
-Imports of whole modules are preferred to imports of individual declarations or submodules. There are a number of reasons to avoid importing individual members:
-* There is no automated tooling to resolve/organize imports.
-* Existing automated tooling (such as Xcode’s migrator) are less likely to work well on code that imports individual members because they are considered corner cases.
-* The prevailing style in Swift (based on official examples and community code) is to import entire modules.
+*Placement and Formatting*
+Import statements are the first non-comment tokens in a source file. They are never line-wrapped.
 
-Imports of individual declarations are permitted when importing the whole module would otherwise pollute the global namespace with top-level definitions (such as C interfaces). Use your best judgment in these situations.
+*Grouping and Ordering*
+Imports are organized into the following groups, with each group separated by a single blank line. Within each group, imports are ordered lexicographically (alphabetically).
 
-Imports of submodules are permitted if the submodule exports functionality that is not available when importing the top-level module. For example, `UIKit.UIGestureRecognizerSubclass` must be imported explicitly to expose the methods that allow client code to subclass `UIGestureRecognizer`—those are not visible by importing `UIKit` alone.
-
-Import statements are not line-wrapped.
-
-Import statements are the first non-comment tokens in a source file. They are grouped in the following fashion, with the imports in each group ordered lexicographically and with exactly one blank line between each group:
-1. Module/submodule imports not under test
-2. Individual declaration imports (`class`, `enum`, `func`, `struct`, `var`)
+* Module/submodule imports
+* Individual declaration imports (class, enum, func, etc.)
+* Modules imported with @testable (in test sources only)
 
 ```swift
 import CoreLocation
 import MyThirdPartyModule
 import SpriteKit
 import UIKit
-
-import func Darwin.C.isatty
 ```
 
-### Type, Variable, and Function Declarations
+### Type and Member Organization
 
-To enhance cohesion and readability, a single source file may contain multiple top-level types when they are closely related and form a single conceptual unit. Grouping tightly coupled components together is encouraged, as it simplifies navigation and understanding when working on a specific piece of functionality. For example:
+This rule covers two aspects of organization: how types are arranged in files, and how members are ordered within a type.
 
-A protocol and the primary class that conforms to it can be defined in the same file.
+* File Organization
+Group related top-level types in the same source file to improve cohesion and readability. This is encouraged for tightly coupled components, such as:
+* A protocol and the primary class that conforms to it.
+* A public type and its exclusive fileprivate helpers (e.g., error enums or small structs).
 
-A public type and its `fileprivate` helper types or error enums, which are used exclusively by the main type, are excellent candidates for being in the same file.
+However, large, complex, or unrelated types must reside in their own separate files.
 
-However, avoid placing large, complex, or unrelated types together. If a type is substantial enough to stand on its own, it should reside in its own dedicated file.
+* Member Ordering
 
-The order of types, variables, and functions in a source file, and the order of the members of those types, can have a great effect on readability. However, there is no single correct recipe for how to do it; different files and different types may order their contents in different ways.
+The ordering of members within a type (and types within a file) must follow a logical order that enhances readability.
 
-What is important is that each file and type uses some logical order, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the type, as that would yield “chronological by date added” ordering, which is not a logical ordering.
+While there is no single required order (e.g., properties then initializers then public methods), the structure must be deliberate and explainable. The goal is to make the code's structure intuitive and easy to navigate.
 
-```swift
-class DataManager {
-    private var cache: [String: Data] = [:]
-    let fileManager = FileManager.default
-
-    init() {
-        // ...
-    }
-
-    func loadData(for key: String) -> Data? {
-        if let cachedData = cache[key] {
-            return cachedData
-        }
-        return loadDataFromFile(named: key)
-    }
-
-    private func loadDataFromFile(named fileName: String) -> Data? {
-        return nil
-    }
-}
-```
+❌ Avoid simply appending new methods to the end of a file. Chronological ordering is not a logical structure.
 
 ### Overloaded Declarations
 
@@ -140,10 +69,15 @@ Swift code has a column limit of 200 characters. Except as noted below, any line
 
 In general, braces follow Kernighan and Ritchie (K&R) style for non-empty blocks with exceptions for Swift-specific constructs and rules:
 * There **is no** line break before the opening brace (`{`), *unless* required by application of the rules in [Line-Wrapping](#line-wrapping).
+  
 * There **is a** line break after the opening brace (`{`), except in closures, where the signature of the closure is placed on the same line as the curly brace, if it fits, and a line break follows the `in` keyword.
+  
 * where it may be omitted as described in [One Statement Per Line](#one-statement-per-line).
+  
 * empty blocks may be written as `{}`.
+  
 * There **is a** line break before the closing brace (`}`), except where it may be omitted as described in [One Statement Per Line](#one-statement-per-line), or it completes an empty block.
+  
 * There **is a** line break after the closing brace (`}`), *if and only if* that brace terminates a statement or the body of a declaration. For example, an `else` block is written `} else {` with both braces on the same line.
 
 ### Semicolons
@@ -1826,3 +1760,53 @@ However, using numeric suffixes for properties or local variables is permissible
     class UserV1 { ... }
     class UserV2 { ... }
     ```
+### Special Escape Sequences
+
+For any character that has a special escape sequence (`\t`, `\n`, `\r`, `\"`, `\'`, `\\`, and `\0`), that sequence is used rather than the equivalent Unicode (e.g., `\u{000a}`) escape sequence.
+
+### Invisible Characters and Modifiers
+
+Invisible characters, such as the zero width space and other control characters that do not affect the graphical representation of a string, are always written as Unicode escape sequences.
+
+Control characters, combining characters, and variation selectors that *do* affect the graphical representation of a string are not escaped when they are attached to a character or characters that they modify. If such a Unicode scalar is present in isolation or is otherwise not modifying another character in the same string, it is written as a Unicode escape sequence.
+
+The strings below are well-formed because the umlauts and variation selectors associate with neighboring characters in the string. The second example is in fact composed of *five* Unicode scalars, but they are unescaped because the specific combination is rendered as a single character.
+
+```swift
+let size = "Übergröße"
+let shrug = "🤷🏿‍️"
+```
+In the example below, the umlaut and variation selector are in strings by themselves, so they are escaped.
+```swift
+let diaeresis = "\u{0308}"
+let skinToneType6 = "\u{1F3FF}"
+```
+If the umlaut were included in the string literally, it would combine with the preceding quotation mark, impairing readability. Likewise, while most systems may render a standalone skin tone modifier as a block graphic, the example below is still forbidden because it is a modifier that is not modifying a character in the same string.
+!!! danger "AVOID"
+    ```swift
+    let diaeresis = "̈"
+    let skinToneType6 = "🏿"
+    ```
+
+### String Literals
+
+Unicode escape sequences (`\u{????}`) and literal code points (for example, `Ü`) outside the 7-bit ASCII range are never mixed in the same string.
+
+More specifically, string literals are either:
+* composed of a combination of Unicode code points written literally and/or single character escape sequences (such as `\t`, but *not* `\u{????}`), or
+* composed of 7-bit ASCII with any number of Unicode escape sequences and/or other escape sequences.
+
+The following example is correct because `\n` is allowed to be present among other Unicode code points.
+```swift
+let size = "Übergröße\n"
+```
+The following example is allowed because it follows the rules above, but it is **not preferred** because the text is harder to read and understand compared to the string above.
+```swift
+let size = "\u{00DC}bergr\u{00F6}\u{00DF}e\n"
+```
+The example below is forbidden because it mixes code points outside the 7-bit ASCII range in both literal form and in escaped form.
+!!! danger "AVOID"
+    ```swift
+    let size = "Übergr\u{00F6}\u{00DF}e\n"
+    ```
+**Aside:** Never make your code less readable simply out of fear that some programs might not handle non-ASCII characters properly. If that should happen, those programs are broken and must be fixed.
