@@ -7,15 +7,15 @@ Comments describing the contents of a source file are optional. They are discour
 ### Import Statements
 A source file imports exactly the top-level modules that it needs—nothing more and nothing less. Do not rely on transitive imports (e.g., that UIKit also imports Foundation).
 
-*Module Imports*
+#### Module Imports
 Imports of whole modules are required over imports of individual declarations or submodules.
 * *Exception (Individual Declarations):* Importing individual declarations is permitted only when importing the whole module would pollute the global namespace (e.g., with C interfaces).
 * *Exception (Submodules):* Importing submodules is permitted only if the submodule provides functionality not available in the top-level module (e.g., UIKit.UIGestureRecognizerSubclass).
 
-*Placement and Formatting*
+#### Placement and Formatting
 Import statements are the first non-comment tokens in a source file. They are never line-wrapped.
 
-*Grouping and Ordering*
+#### Grouping and Ordering
 Imports are organized into the following groups, with each group separated by a single blank line. Within each group, imports are ordered lexicographically (alphabetically).
 
 * Module/submodule imports
@@ -33,14 +33,14 @@ import UIKit
 
 This rule covers two aspects of organization: how types are arranged in files, and how members are ordered within a type.
 
-* File Organization
+#### File Organization
 Group related top-level types in the same source file to improve cohesion and readability. This is encouraged for tightly coupled components, such as:
 * A protocol and the primary class that conforms to it.
 * A public type and its exclusive fileprivate helpers (e.g., error enums or small structs).
 
 However, large, complex, or unrelated types must reside in their own separate files.
 
-* Member Ordering
+#### Member Ordering
 
 The ordering of members within a type (and types within a file) must follow a logical order that enhances readability.
 
