@@ -1,9 +1,3 @@
-### Whitespace Characters
-
-Aside from the line terminator, the Unicode horizontal space character (U+0020) is the only whitespace character that appears anywhere in a source file. The implications are:
-* All other whitespace characters in string and character literals are represented by their corresponding escape sequence.
-* Tab characters are not used for indentation.
-
 ### Special Escape Sequences
 
 For any character that has a special escape sequence (`\t`, `\n`, `\r`, `\"`, `\'`, `\\`, and `\0`), that sequence is used rather than the equivalent Unicode (e.g., `\u{000a}`) escape sequence.
@@ -79,7 +73,6 @@ Import statements are not line-wrapped.
 Import statements are the first non-comment tokens in a source file. They are grouped in the following fashion, with the imports in each group ordered lexicographically and with exactly one blank line between each group:
 1. Module/submodule imports not under test
 2. Individual declaration imports (`class`, `enum`, `func`, `struct`, `var`)
-3. Modules imported with `@testable` (only present in test sources)
 
 ```swift
 import CoreLocation
@@ -88,19 +81,21 @@ import SpriteKit
 import UIKit
 
 import func Darwin.C.isatty
-
-@testable import MyModuleUnderTest
 ```
 
 ### Type, Variable, and Function Declarations
 
-In general, most source files contain only one top-level type, especially when the type declaration is large. Exceptions are allowed when it makes sense to include multiple related types in a single file. For example,
-* A class and its delegate protocol may be defined in the same file.
-* A type and its small related helper types may be defined in the same file. This can be useful when using `fileprivate` to restrict certain functionality of the type and/or its helpers to only that file and not the rest of the module.
+To enhance cohesion and readability, a single source file may contain multiple top-level types when they are closely related and form a single conceptual unit. Grouping tightly coupled components together is encouraged, as it simplifies navigation and understanding when working on a specific piece of functionality. For example:
+
+A protocol and the primary class that conforms to it can be defined in the same file.
+
+A public type and its `fileprivate` helper types or error enums, which are used exclusively by the main type, are excellent candidates for being in the same file.
+
+However, avoid placing large, complex, or unrelated types together. If a type is substantial enough to stand on its own, it should reside in its own dedicated file.
 
 The order of types, variables, and functions in a source file, and the order of the members of those types, can have a great effect on readability. However, there is no single correct recipe for how to do it; different files and different types may order their contents in different ways.
 
-What is important is that each file and type uses **some logical order**, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the type, as that would yield “chronological by date added” ordering, which is not a logical ordering.
+What is important is that each file and type uses some logical order, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the type, as that would yield “chronological by date added” ordering, which is not a logical ordering.
 
 ```swift
 class DataManager {
@@ -127,10 +122,6 @@ class DataManager {
 ### Overloaded Declarations
 
 When a type has multiple initializers or subscripts, or a file/type has multiple functions with the same base name (though perhaps with different argument labels), *and* when these overloads appear in the same type or extension scope, they appear sequentially with no other code in between.
-
-### Extensions
-
-Extensions can be used to organize functionality of a type across multiple “units.” As with member order, the organizational structure/grouping you choose can have a great effect on readability; you must use **some logical organizational structure** that you could explain to a reviewer if asked.
 
 ---
 
@@ -216,19 +207,19 @@ public func index<Elements: Collection, Element>(of element: Element, in collect
 }
 ```
 This declaration is split as follows (scroll horizontally if necessary to see the full example). Unbreakable token sequences are indicated in orange; breakable sequences are indicated in blue.
-
-`public func index`<`Elements: Collection, Element`>`(of element: Element, in collection: Elements)` `->` `Elements.Index?` `where` `Elements.Element == Element, Element: Equatable` `{`
+```swift
+public func index`<`Elements: Collection, Element`>`(of element: Element, in collection: Elements)` `->` `Elements.Index?` `where` `Elements.Element == Element, Element: Equatable` `{`
 
   // ...
 
-`}`
-
+}
+```
 Using these concepts, the cardinal rules of Swift style for line-wrapping are:
-1. If the entire declaration, statement, or expression fits on one line, then do that.
-2. Comma-delimited lists are only laid out in one direction: horizontally or vertically. In other words, all elements must fit on the same line, or each element must be on its own line. A horizontally-oriented list does not contain any line breaks, even before the first element or after the last element. Except in control flow statements, a vertically-oriented list contains a line break before the first element and after each element.
-3. A continuation line starting with an unbreakable token sequence is indented at the same level as the original line.
-4. A continuation line that is part of a vertically-oriented comma-delimited list is indented exactly +4 from the original line.
-5. When an open curly brace (`{`) follows a line-wrapped declaration or expression, it is on the same line as the final continuation line unless that line is indented at +4 from the original line. In that case, the brace is placed on its own line, to avoid the continuation lines from blending visually with the body of the subsequent block.
+* If the entire declaration, statement, or expression fits on one line, then do that.
+* Comma-delimited lists are only laid out in one direction: horizontally or vertically. In other words, all elements must fit on the same line, or each element must be on its own line. A horizontally-oriented list does not contain any line breaks, even before the first element or after the last element. Except in control flow statements, a vertically-oriented list contains a line break before the first element and after each element.
+* A continuation line starting with an unbreakable token sequence is indented at the same level as the original line.
+* A continuation line that is part of a vertically-oriented comma-delimited list is indented exactly +4 from the original line.
+* When an open curly brace (`{`) follows a line-wrapped declaration or expression, it is on the same line as the final continuation line unless that line is indented at +4 from the original line. In that case, the brace is placed on its own line, to avoid the continuation lines from blending visually with the body of the subsequent block.
 
 !!! success "GOOD"
     ```swift
@@ -260,27 +251,13 @@ Using these concepts, the cardinal rules of Swift style for line-wrapping are:
     }
     ```
 
-For declarations that contain a `where` clause followed by generic constraints, additional rules apply:
-* If the generic constraint list exceeds the column limit when placed on the same line as the return type, then a line break is first inserted *before* the `where` keyword and the `where` keyword is indented at the same level as the original line.
-* If the generic constraint list still exceeds the column limit after inserting the line break above, then the constraint list is oriented vertically with a line break after the `where` keyword and a line break after the final constraint.
-
-Concrete examples of this are shown in the relevant subsections below.
-
-This line-wrapping style ensures that the different parts of a declaration are **quickly and easily identifiable to the reader** by using indentation and line breaks, while also preserving the same indentation level for those parts throughout the file. Specifically, it prevents the zig-zag effect that would be present if the arguments are indented based on opening parentheses, as is common in other languages:
-
-!!! danger "AVOID"
-    ```swift
-    public func index<Elements: Collection, Element>(of element: Element,
-                                                     in collection: Elements) -> Elements.Index?
-        where Elements.Element == Element, Element: Equatable {
-      doSomething()
-    }
-    ```
 #### Function Declarations
+```swift
 `modifiers func name(formal arguments)` `{`
 `modifiers func name(formal arguments) ->` `result` `{`
 `modifiers func name<generic arguments>(formal arguments) throws ->` `result` `{`
 `modifiers func name<generic arguments>(formal arguments) throws ->` `result` `where` `generic constraints` `{`
+```
 
 Applying the rules above from left to right gives us the following line-wrapping:
 ```swift
@@ -328,10 +305,12 @@ However, **typealiases or some other means are often a better way to simplify co
 
 The examples below apply equally to `class`, `struct`, `enum`, `extension`, and `protocol` (with the obvious exception that all but the first do not have superclasses in their inheritance list, but they are otherwise structurally similar).
 
+```swift
 `modifiers class Name` `{`
 `modifiers class Name:` `superclass and protocols` `{`
 `modifiers class Name<generic arguments>:` `superclass and protocols` `{`
 `modifiers class Name<generic arguments>:` `superclass and protocols` `where` `generic constraints` `{`
+```
 
 ```swift
 class MyClass:
@@ -1153,50 +1132,11 @@ Like other variables, global constants are `lowerCamelCase`. Hungarian notation,
     let SECONDS_PER_MINUTE = 60
     ```
 
-## Programming Practices
-Common themes among the rules in this section are: avoid redundancy, avoid ambiguity, and prefer implicitness over explicitness unless being explicit improves readability and/or reduces ambiguity.
-
 ### Compiler Warnings
 Code should compile without warnings when feasible. Any warnings that are able to be removed easily by the author must be removed.
 
 A reasonable exception is deprecation warnings, where it may not be possible to immediately migrate to the replacement API, or where an API may be deprecated for external users but must still be supported inside a library during a deprecation period.
 
-### Initializers
-
-For `structs`, Swift synthesizes a non-public memberwise `init` that takes arguments for `var` properties and for any `let` properties that lack default values. When that initializer is suitable (that is, a `public` one is not needed), it is used and no explicit initializer is written.
-
-The initializers declared by the special `ExpressibleBy*Literal` compiler protocols are never called directly.
-
-```swift
-struct Kilometers: ExpressibleByIntegerLiteral {
-    init(integerLiteral value: Int) {
-        // ...
-    }
-}
-```
-!!! success "GOOD"
-    ```swift
-    let k1: Kilometers = 10
-    let k2 = 10 as Kilometers
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    let k = Kilometers(integerLiteral: 10)
-    ```
-Explicitly calling `.init(...)` is allowed only when the receiver of the call is a metatype variable. In direct calls to the initializer using the literal type name, `.init` is omitted. (Referring to the initializer directly by using `MyType.init` syntax to convert it to a closure is permitted.)
-
-!!! success "GOOD"
-    ```swift
-    let x = MyType(arguments)
-    let type = lookupType(context)
-    let x = type.init(arguments)
-    let x = makeValue(factory: MyType.init)
-    ```
-!!! danger "AVOID"
-    ```swift
-    let x = MyType.init(arguments)
-    ```
 ### Properties
 The `get` block for a read-only computed property is omitted and its body is directly nested inside the property declaration.
 
@@ -1288,15 +1228,7 @@ Sentinel values are avoided when designing algorithms (for example, an “index�
         // Didn't find it.
     }
     ```
-`Optional` is also used for error scenarios when there is a single, obvious failure state; that is, when an operation may fail for a single domain-specific reason that is clear to the client. (The domain-specific restriction is meant to exclude severe errors that are typically out of the user’s control to properly handle, such as out-of-memory errors.)
-For example, converting a string to an integer would fail if the string does not represent a valid integer that fits into the type’s bit width:
-```swift
-struct Int17 {
-  init?(_ string: String) {
-    // ...
-  }
-}
-```
+
 Conditional statements that test that an `Optional` is non-nil *but do not access the wrapped value* are written as comparisons to `nil`. The following example is clear about the programmer’s intent:
 
 !!! success "GOOD"
@@ -1312,61 +1244,6 @@ This example, while taking advantage of Swift’s pattern matching and binding s
         print("value was not nil")
     }
     ```
-
-### Error Types
-
-Error types are used when there are multiple possible error states.
-
-Throwing errors instead of merging them with the return type cleanly separates concerns in the API. Valid inputs and valid state produce valid outputs in the result domain and are handled with standard sequential control flow. Invalid inputs and invalid state are treated as errors and are handled using the relevant syntactic constructs (`do-catch` and `try`). For example:
-```swift
-struct Document {
-  enum ReadError: Error {
-    case notFound
-    case permissionDenied
-    case malformedHeader
-  }
-
-  init(path: String) throws {
-    // ...
-  }
-}
-do {
-  let document = try Document(path: "important.data")
-} catch Document.ReadError.notFound {
-  // ...
-} catch Document.ReadError.permissionDenied {
-  // ...
-} catch {
-  // ...
-}
-```
-Such a design forces the caller to consciously acknowledge the failure case by:
-* wrapping the calling code in a `do-catch` block and handling error cases to whichever degree is appropriate,
-* declaring the function in which the call is made as `throws` and letting the error propagate out, or
-* using `try?` when the specific reason for failure is unimportant and only the information about whether the call failed is needed.
-
-In general, with exceptions noted below, **force-try! is forbidden**; it is equivalent to `try` followed by `fatalError` but without a meaningful message. If an error outcome would mean that the program is in such an unrecoverable state that immediate termination is the only reasonable action, it is better to use `do-catch` or `try?` and provide more context in the error message to assist debugging if the operation does fail.
-
-**Exception:** `Force-try!` is allowed in unit tests and test-only code. It is also allowed in non-test code when it is unmistakably clear that an error would only be thrown because of **programmer** error; we specifically define this to mean a single expression that could be evaluated without context in the Swift REPL. For example, consider initializing a regular expression from a a string literal:
-```swift
-let regex = try! NSRegularExpression(pattern: "a*b+c?")
-```
-The `NSRegularExpression` initializer throws an error if the regular expression is malformed, but when it is a string literal, the error would only occur if the programmer mistyped it. There is no benefit to writing extra error handling logic here.
-
-If the pattern above were not a literal but instead were dynamic or derived from user input, `try!` should **not** be used and errors should be handled gracefully.
-
-### Force Unwrapping and Force Casts
-
-Force-unwrapping and force-casting are often code smells and are strongly discouraged. Unless it is extremely clear from surrounding code why such an operation is safe, a comment should be present that describes the invariant that ensures that the operation is safe. For example,
-```swift
-let value = getSomeInteger()
-// ...intervening code...
-// This force-unwrap is safe because `value` is guaranteed to fall within the
-// valid enum cases because it came from some data source that only permits
-// those raw values.
-return SomeEnum(rawValue: value)!
-```
-**Exception:** Force-unwraps are allowed in unit tests and test-only code without additional documentation. This keeps such code free of unnecessary control flow. In the event that `nil` is unwrapped or a cast operation is to an incompatible type, the test will fail which is the desired result.
 
 ### Access Levels
 
