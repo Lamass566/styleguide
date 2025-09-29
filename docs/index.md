@@ -15,13 +15,6 @@ Imports of whole modules are required over imports of individual declarations or
 #### Placement and Formatting
 Import statements are the first non-comment tokens in a source file. They are never line-wrapped.
 
-#### Grouping and Ordering
-Imports are organized into the following groups, with each group separated by a single blank line. Within each group, imports are ordered lexicographically (alphabetically).
-
-* Module/submodule imports
-* Individual declaration imports (class, enum, func, etc.)
-* Modules imported with @testable (in test sources only)
-
 ```swift
 import CoreLocation
 import MyThirdPartyModule
@@ -80,35 +73,12 @@ In general, braces follow Kernighan and Ritchie (K&R) style for non-empty blocks
   
 * There **is a** line break after the closing brace (`}`), *if and only if* that brace terminates a statement or the body of a declaration. For example, an `else` block is written `} else {` with both braces on the same line.
 
-### Semicolons
-
-Semicolons (`;`) are **not used**, either to terminate or separate statements.
-In other words, the only location where a semicolon may appear is inside a string literal or a comment.
-
-!!! success "GOOD"
-    ```swift
-    func printSum(_ a: Int, _ b: Int) {
-        let sum = a + b
-        print(sum)
-    }
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    func printSum(_ a: Int, _ b: Int) {
-        let sum = a + b;
-        print(sum);
-    }
-    ```
-
 ### One Statement Per Line
 
-There is **at most** one statement per line, and each statement is followed by a line break, except when the line ends with a block that also contains zero or one statements.
+There is at most one statement per line, and each statement is followed by a line break.
+
+Exception: A line may end with a block that contains zero or one statement. This is often used for concise control flow or simple closures.
 ```swift
-guard let value = value else { return 0 }
-
-defer { file.close() }
-
 switch someEnum {
     case .first: 5
     case .second: 10
@@ -117,16 +87,37 @@ switch someEnum {
 
 let squares = numbers.map { $0 * $0 }
 
-var someProperty: Int {
-  get { otherObject.property }
-  set { otherObject.property = newValue }
-}
-
 var someProperty: Int { otherObject.somethingElse() }
-
-required init?(coder aDecoder: NSCoder) { fatalError("no coder") }
 ```
-Wrapping the body of a single-statement block onto its own line is always allowed. Exercise best judgment when deciding whether to place a conditional statement and its body on the same line. For example, single line conditionals work well for early-return and basic cleanup tasks, but less so when the body contains a function call with significant logic. When in doubt, write it as a multi-line statement.
+#### Clarification: Context Matters (UI vs. Logic) 💡
+While the compact, single-line form is permitted by the general rule, its application should be contextual. For the sake of readability and maintainability, we distinguish between UI code and logic/flow control code.
+
+#### ❌ In UI Code (SwiftUI Views, UIKit View Configuration)
+
+In declarative UI code, readability is the highest priority. The structure of the code should mirror the structure of the UI itself. Therefore, single-line blocks are not allowed for UI components, as they can obscure the view hierarchy. Always use multi-line formatting for clarity.
+
+!!! danger "AVOID"
+    ```swift
+    HStack {
+        Text("Welcome").font(.title); Button("Log Out") { viewModel.logOut() }
+    }
+    ```
+
+!!! success "GOOD"
+    ```swift
+    HStack {
+      Text("Welcome")
+          .font(.title)
+
+      Button("Log Out") {
+          viewModel.logOut()
+      }
+    }
+    ```
+
+#### ✅ In Logic Code (Flow/Coordinator/ViewModel/Service Modules)
+
+In imperative logic code, the single-line format is allowed and often preferred for simple, self-contained operations. This is common for control flow statements (guard, if), cleanup (defer), or simple transformations (map, filter). It helps reduce vertical space and keeps simple logic self-contained.
 
 ### Line-Wrapping
 #### Function Declarations
