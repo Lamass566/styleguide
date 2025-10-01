@@ -5,21 +5,27 @@
 Comments describing the contents of a source file are optional. They are discouraged for files that contain only a single abstraction (such as a class declaration)—in those cases, the documentation comment on the abstraction itself is sufficient and a file comment is only present if it provides additional useful information. File comments are allowed for files that contain multiple abstractions in order to document that grouping as a whole.
 
 ### Import Statements
-A source file imports exactly the top-level modules that it needs—nothing more and nothing less. Do not rely on transitive imports (e.g., that UIKit also imports Foundation).
+A source file imports exactly the declarations that it needs—nothing more and nothing less. Do not rely on transitive imports (e.g., that SwiftUI also imports Foundation).
 
-#### Module Imports
-Imports of whole modules are required over imports of individual declarations or submodules.
-* *Exception (Individual Declarations):* Importing individual declarations is permitted only when importing the whole module would pollute the global namespace (e.g., with C interfaces).
-* *Exception (Submodules):* Importing submodules is permitted only if the submodule provides functionality not available in the top-level module (e.g., UIKit.UIGestureRecognizerSubclass).
+#### Declaration-Level Imports
+Imports of individual declarations (struct, enum, class, etc.) are required over imports of whole modules. This practice ensures that dependencies between modules are explicit and granular.
+* *Exception (Whole-Module Imports):* Importing an entire module is permitted for foundational system frameworks (e.g., SwiftUI, Foundation) or when a file uses a substantial number of declarations from a single module, making individual imports impractical and less readable.
 
 #### Placement and Formatting
 Import statements are the first non-comment tokens in a source file. They are never line-wrapped.
 
+Imports should be grouped and sorted. The standard grouping order is:
+
+* Apple frameworks (e.g., SwiftUI, Foundation)
+* Third-party modules (e.g., TheComposableArchitecture, Kingfisher)
+* Project-internal modules (e.g., AuthService, DesignSystem)
+
 ```swift
-import CoreLocation
-import MyThirdPartyModule
-import SpriteKit
-import UIKit
+import AppError
+import AuthService
+import SomeCore
+import enum SomeViews.SomeViewAction
+import struct SomeViews.SomeViewState
 ```
 
 ### Type and Member Organization
@@ -35,11 +41,41 @@ However, large, complex, or unrelated types must reside in their own separate fi
 
 #### Member Ordering
 
-The ordering of members within a type (and types within a file) must follow a logical order that enhances readability.
+To ensure consistency and predictability, the ordering of members within a type (class, struct, enum) must follow a strict, logical sequence. This makes code easier to navigate, review, and maintain.
 
-While there is no single required order (e.g., properties then initializers then public methods), the structure must be deliberate and explainable. The goal is to make the code's structure intuitive and easy to navigate.
+The required order is as follows:
 
-❌ Avoid simply appending new methods to the end of a file. Chronological ordering is not a logical structure.
+* Type Aliases and Nested Types: typealias, nested enum, struct, class.
+
+* Properties: Stored and computed properties, grouped by access level (e.g., public, internal, private). Constants (let) should precede variables (var).
+
+* Initializers: All init methods, including required and convenience initializers.
+
+* Public Methods: The primary public interface of the type.
+
+* Private and Fileprivate Methods: Helper methods, often prefixed with private or fileprivate, which support the public interface.
+
+```swift
+struct ProfileProgressView: View {
+    typealias Action = () -> Void
+    
+    let progress: Int
+    let action: Action?
+    var buttonForegroundStyle: Color = .constant(.white)
+    
+    var body: some View {
+        //...
+    }
+    
+    func buttonForegroundStyle(_ color: Color) -> Self {
+        //...
+    }
+    
+    private func progressView(value: CGFloat) -> some View {
+        //...
+    }
+}
+```
 
 ### Overloaded Declarations
 
@@ -126,92 +162,68 @@ Function declarations are wrapped when they exceed the maximum line length. The 
 ##### Arguments and Closing Parenthesis
 When a function's argument list is wrapped, the following rules apply:
 * Each argument must be on its own line.
-* 
-
-Applying the rules above from left to right gives us the following line-wrapping:
-```swift
-public func index<Elements: Collection, Element>(
-    of element: Element,
-    in collection: Elements) -> Elements.Index? where Elements.Element == Element, Element: Equatable {
-    for current in elements {
-        // ...
-    }
-}
-```
-Function declarations in protocols that are terminated with a closing parenthesis (`)`) may place the parenthesis on the same line as the final argument *or* on its own line.
+* Wrapped arguments are indented with a single +4 space indent.
+* The closing parenthesis ) must be placed on a new line, aligned with the func keyword.
 
 ```swift
-public protocol ContrivedExampleDelegate {
-    func contrivedExample(
-        _ contrivedExample: ContrivedExample,
-        willDoSomethingTo someValue: SomeValue)
-}
-```
-
-```swift
-public protocol ContrivedExampleDelegate {
-    func contrivedExample(
-        _ contrivedExample: ContrivedExample,
-        willDoSomethingTo someValue: SomeValue
+public protocol ExampleDelegate {
+    func example(
+        _ example: Example,
+        someValue: SomeValue
     )
 }
 ```
-If types are complex and/or deeply nested, individual elements in the arguments/constraints lists and/or the return type may also need to be wrapped. In these rare cases, the same line-wrapping rules apply to those parts as apply to the declaration itself.
+##### Generic Parameters and where Clauses
+Generics and their constraints have specific wrapping rules to preserve clarity.
+* If the generic parameter list (<...>) causes the function's first line to exceed 60 characters, the generic parameters must be wrapped. Each parameter is placed on a new line with a +4 indent. The closing > is placed on its own line after the last parameter.
+* The where keyword is placed on the same line as the return type. If the constraints themselves need to be wrapped, the first constraint remains with where, and subsequent constraints are placed on new lines, aligned under the first.
 
 ```swift
-public func performanceTrackingIndex<Elements: Collection, Element>(
-    of element: Element,
-    in collection: Elements) -> (
-    Element.Index?,
-    PerformanceTrackingIndexStatistics.Timings,
-    PerformanceTrackingIndexStatistics.SpaceUsed) {
-        // ...
+// Generic parameters and 'where' clause are wrapped
+public func find<
+    Element: Equatable,
+    CollectionType: Collection
+>(
+    element: Element,
+    in collection: CollectionType
+) -> CollectionType.Index? where CollectionType.Element == Element,
+                                 CollectionType.Index: Hashable {
+    // ...
 }
 ```
-However, **typealiases or some other means are often a better way to simplify complex declarations whenever possible.**
 
 #### Type and Extension Declarations
 
 The examples below apply equally to `class`, `struct`, `enum`, `extension`, and `protocol` (with the obvious exception that all but the first do not have superclasses in their inheritance list, but they are otherwise structurally similar).
 
 ```swift
-class MyClass:
-    MySuperclass,
-    MyProtocol,
-    SomeoneElsesProtocol,
-    SomeFrameworkProtocol
-{
+class MyClass: MySuperclass,
+               MyProtocol,
+               SomeoneElsesProtocol,
+               SomeFrameworkProtocol {
     // ...
 }
 
-class MyContainer<Element>:
-    MyContainerSuperclass,
-    MyContainerProtocol,
-    SomeoneElsesContainerProtocol,
-    SomeFrameworkContainerProtocol
-{
+class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
+                             MyContainerProtocol,
+                             SomeoneElsesContainerProtocol,
+                             SomeFrameworkContainerProtocol {
     // ...
 }
 
-class MyContainer<BaseCollection>:
-    MyContainerSuperclass,
-    MyContainerProtocol,
-    SomeoneElsesContainerProtocol,
-    SomeFrameworkContainerProtocol
-where BaseCollection: Collection {
+class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
+                                             MyContainerProtocol,
+                                             SomeoneElsesContainerProtocol,
+                                             SomeFrameworkContainerProtocol where BaseCollection: Collection {
     // ...
 }
 
-class MyContainer<BaseCollection>:
-    MyContainerSuperclass,
-    MyContainerProtocol,
-    SomeoneElsesContainerProtocol,
-    SomeFrameworkContainerProtocol
-where
-    BaseCollection: Collection,
-    BaseCollection.Element: Equatable,
-    BaseCollection.Element: SomeOtherProtocolOnlyUsedToForceLineWrapping
-{
+class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
+                                             MyContainerProtocol,
+                                             SomeoneElsesContainerProtocol,
+                                             SomeFrameworkContainerProtocol where BaseCollection: Collection,
+                                                                                  BaseCollection.Element: Equatable,
+                                                                                  BaseCollection.Element: SomeOtherProtocolOnlyUsedToForceLineWrapping {
     // ...
 }
 ```
@@ -242,24 +254,6 @@ someAsynchronousAction.execute(withDelay: howManySeconds, context: actionContext
 }
 ```
 
-#### Other Expressions
-When line-wrapping other expressions that are not function calls (as described above), the second line (the one immediately following the first break) is indented exactly +4 from the original line.
-
-When there are multiple continuation lines, indentation may be varied in increments of +4 as needed. In general, two continuation lines use the same indentation level if and only if they begin with syntactically parallel elements. However, if there are many continuation lines caused by long wrapped expressions, consider splitting them into multiple statements using temporary variables when possible.
-
-!!! success "GOOD"
-    ```swift
-    let result = anExpression + thatIsMadeUpOf * aLargeNumber +
-        ofTerms / andTherefore % mustBeWrapped + (
-            andWeWill - keepMakingItLonger * soThatWeHave / aContrivedExample)
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    let result = anExpression + thatIsMadeUpOf * aLargeNumber +
-        ofTerms / andTherefore % mustBeWrapped + (
-            andWeWill - keepMakingItLonger * soThatWeHave / aContrivedExample)
-    ```
 ### Horizontal Whitespace
 
 **Terminology note:** In this section, *horizontal whitespace* refers to *interior* space. These rules are never interpreted as requiring or forbidding additional space at the start of a line.
@@ -747,7 +741,7 @@ func greet(apathetically nameProvider: () -> String) {
     print("Oh, look. It's \(nameProvider()).")
 }
 
-greet { "John" }  // error: ambiguous use of 'greet'
+greet { "John" }  // arror: ambiguous use of 'greet'
 ```
 This example is fixed by differentiating some part of the function name other than the closure argument—in this case, the base name:
 ```swift
@@ -772,7 +766,16 @@ If a function call has multiple closure arguments, then **none** are called usin
         },
         completion: { finished in
             // ...
-        })
+        }
+    )
+
+    // Use modern multiple trailing closure syntax.
+    // The code reads like a native control flow statement.
+    UIView.animate(withDuration: 0.5) {
+        // ...
+    } completion: {  finished in
+        // ...
+    }
     ```
 !!! danger "AVOID"
     ```swift
@@ -783,36 +786,6 @@ If a function call has multiple closure arguments, then **none** are called usin
         }) { finished in
             // ...
         }
-    ```
-
-If a function call has multiple closure arguments, use multiple trailing closure syntax. The first trailing closure is written without its argument label; subsequent trailing closures must include their argument labels.
-
-This modern syntax (available since Swift 5.3) is the preferred, idiomatic style as it improves readability and makes the call site resemble a native Swift control flow statement.
-
-!!! success "GOOD"
-    ```swift
-    // Use modern multiple trailing closure syntax.
-    // The code reads like a native control flow statement.
-    UIView.animate(withDuration: 0.5) {
-        // ...
-    } completion: {  finished in
-        // ...
-    }
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    // Avoid nesting multiple closures inside the parentheses.
-    // This style is verbose and considered outdated.
-    UIView.animate(
-        withDuration: 0.5,
-        animations: {
-            // ...
-        },
-        completion: { finished in
-            // ...
-        }
-    )
     ```
 
 If a function has a single closure argument and it is the final argument, then it is **always** called using trailing closure syntax, except in the following cases to resolve ambiguity or parsing errors:
@@ -1189,53 +1162,7 @@ Declaring an `enum` without cases is the canonical way to define a “namespace�
         static let tileContentSize: CGSize(width: 80, height: 64)
     }
     ```
-
-### `guards` for Early Exits
-
-A `guard` statement, compared to an `if` statement with an inverted condition, provides visual emphasis that the condition being tested is a special case that causes early exit from the enclosing scope.
-
-Furthermore, `guard` statements improve readability by eliminating extra levels of nesting (the “pyramid of doom”); failure conditions are closely coupled to the conditions that trigger them and the main logic remains flush left within its scope.
-
-This can be seen in the following examples; in the first, there is a clear progression that checks for invalid states and exits, then executes the main logic in the successful case. In the second example without `guard`, the main logic is buried at an arbitrary nesting level and the thrown errors are separated from their conditions by a great distance.
-
-!!! success "GOOD"
-    ```swift
-    func discombobulate(_ values: [Int]) throws -> Int {
-        guard let first = values.first else {
-            throw DiscombobulationError.arrayWasEmpty
-        }
-        guard first >= 0 else {
-            throw DiscombobulationError.negativeEnergy
-        }
-
-        var result = 0
-        for value in values {
-            result += invertedCombobulatoryFactory(of: value)
-        }
-        return result
-    }
-    ```
-!!! danger "AVOID"
-    ```swift
-    func discombobulate(_ values: [Int]) throws -> Int {func discombobulate(_ values: [Int]) throws -> Int {
-        if let first = values.first {
-            if first >= 0 {
-            var result = 0
-            
-            for value in values {
-                result += invertedCombobulatoryFactor(of: value)
-            }
-            return result
-            } else {
-                throw DiscombobulationError.negativeEnergy
-            }
-        } else {
-            throw DiscombobulationError.arrayWasEmpty
-        }
-    }
-    ```
-A guard-continue statement can also be useful in a loop to avoid increased indentation when the entire body of the loop should only be executed in some cases (but see also the for-where discussion below.)
-
+    
 ### for-where Loops
 When the entirety of a for loop’s body would be a single if block testing a condition of the element, the test is placed in the where clause of the for statement instead.
 
@@ -1470,35 +1397,6 @@ Documentation comments begin with a brief single-sentence summary. Method summar
       // ...
     }
     ```
-### Parameter, Returns, and Throws Tags
-
-Use the singular - Parameter tag for a single argument. Use the plural - Parameters tag with a nested list for multiple arguments.
-
-!!! success "GOOD"
-    ```swift
-    /// - Parameter command: The command to execute.
-    func execute(command: String) -> String { ... }
-
-    /// - Parameters:
-    ///   - command: The command to execute.
-    ///   - stdin: The string to use as standard input.
-    func execute(command: String, stdin: String) -> String { ... }
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    // Using the plural form for a single parameter.
-    /// - Parameters:
-    ///   - command: The command to execute.
-    func execute(command: String) -> String { ... }
-
-    // Using the singular form multiple times.
-    /// - Parameter command: The command to execute.
-    /// - Parameter stdin: The string to use as standard input.
-    func execute(command: String, stdin: String) -> String { ... }
-    ```
-    Of course. Here is a new rule formatted in the style of the provided document, ready to be added to the Programming Practices section.
-
 ### Higher-Order Functions for Collections
 
 Prefer using higher-order functions like map, filter, reduce, and flatMap for common collection operations over constructing manual for-in loops. This practice leads to more declarative, concise, and readable code by clearly stating the transformation's intent rather than the step-by-step mechanics of its implementation. It also avoids the boilerplate of creating and mutating intermediate collections.
@@ -1726,7 +1624,7 @@ However, property and local variable names may use common, contextually-clear ab
         // ...
     }
     ```
-
+    
 ### Numeric Suffixes in Names
 Avoid appending arbitrary numbers to the names of types such as classes, structs, protocols, and enums. A type's name should describe its purpose or domain, not its sequence or version. If you need variants of a type, prefer more descriptive names or use generics.
 
@@ -1751,53 +1649,42 @@ However, using numeric suffixes for properties or local variables is permissible
     class UserV1 { ... }
     class UserV2 { ... }
     ```
+
+### Parameter, Returns, and Throws Tags
+
+Use the singular - Parameter tag for a single argument. Use the plural - Parameters tag with a nested list for multiple arguments.
+
+!!! success "GOOD"
+    ```swift
+    /// - Parameter command: The command to execute.
+    func execute(command: String) -> String { ... }
+
+    /// - Parameters:
+    ///   - command: The command to execute.
+    ///   - stdin: The string to use as standard input.
+    func execute(command: String, stdin: String) -> String { ... }
+    ```
+
+!!! danger "AVOID"
+    ```swift
+    // Using the plural form for a single parameter.
+    /// - Parameters:
+    ///   - command: The command to execute.
+    func execute(command: String) -> String { ... }
+
+    // Using the singular form multiple times.
+    /// - Parameter command: The command to execute.
+    /// - Parameter stdin: The string to use as standard input.
+    func execute(command: String, stdin: String) -> String { ... }
+    ```
+    Of course. Here is a new rule formatted in the style of the provided document, ready to be added to the Programming Practices section.
+
 ### Special Escape Sequences
 
 For any character that has a special escape sequence (`\t`, `\n`, `\r`, `\"`, `\'`, `\\`, and `\0`), that sequence is used rather than the equivalent Unicode (e.g., `\u{000a}`) escape sequence.
 
-### Invisible Characters and Modifiers
+### File Header Comments
 
-Invisible characters, such as the zero width space and other control characters that do not affect the graphical representation of a string, are always written as Unicode escape sequences.
+The boilerplate header comment block automatically added by Xcode to new files should be deleted.
 
-Control characters, combining characters, and variation selectors that *do* affect the graphical representation of a string are not escaped when they are attached to a character or characters that they modify. If such a Unicode scalar is present in isolation or is otherwise not modifying another character in the same string, it is written as a Unicode escape sequence.
-
-The strings below are well-formed because the umlauts and variation selectors associate with neighboring characters in the string. The second example is in fact composed of *five* Unicode scalars, but they are unescaped because the specific combination is rendered as a single character.
-
-```swift
-let size = "Übergröße"
-let shrug = "🤷🏿‍️"
-```
-In the example below, the umlaut and variation selector are in strings by themselves, so they are escaped.
-```swift
-let diaeresis = "\u{0308}"
-let skinToneType6 = "\u{1F3FF}"
-```
-If the umlaut were included in the string literally, it would combine with the preceding quotation mark, impairing readability. Likewise, while most systems may render a standalone skin tone modifier as a block graphic, the example below is still forbidden because it is a modifier that is not modifying a character in the same string.
-!!! danger "AVOID"
-    ```swift
-    let diaeresis = "̈"
-    let skinToneType6 = "🏿"
-    ```
-
-### String Literals
-
-Unicode escape sequences (`\u{????}`) and literal code points (for example, `Ü`) outside the 7-bit ASCII range are never mixed in the same string.
-
-More specifically, string literals are either:
-* composed of a combination of Unicode code points written literally and/or single character escape sequences (such as `\t`, but *not* `\u{????}`), or
-* composed of 7-bit ASCII with any number of Unicode escape sequences and/or other escape sequences.
-
-The following example is correct because `\n` is allowed to be present among other Unicode code points.
-```swift
-let size = "Übergröße\n"
-```
-The following example is allowed because it follows the rules above, but it is **not preferred** because the text is harder to read and understand compared to the string above.
-```swift
-let size = "\u{00DC}bergr\u{00F6}\u{00DF}e\n"
-```
-The example below is forbidden because it mixes code points outside the 7-bit ASCII range in both literal form and in escaped form.
-!!! danger "AVOID"
-    ```swift
-    let size = "Übergr\u{00F6}\u{00DF}e\n"
-    ```
-**Aside:** Never make your code less readable simply out of fear that some programs might not handle non-ASCII characters properly. If that should happen, those programs are broken and must be fixed.
+This information, such as the author's name and creation date, is redundant. The version control system (e.g., Git) is the canonical source for a file's history and authorship. Removing this header reduces noise and keeps the focus on the actual code.
