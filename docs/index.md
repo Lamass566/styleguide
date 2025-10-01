@@ -205,9 +205,9 @@ class MyClass: MySuperclass,
 }
 
 class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                             MyContainerProtocol,
-                             SomeoneElsesContainerProtocol,
-                             SomeFrameworkContainerProtocol {
+                                             MyContainerProtocol,
+                                             SomeoneElsesContainerProtocol,
+                                             SomeFrameworkContainerProtocol {
     // ...
 }
 
