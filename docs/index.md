@@ -121,12 +121,12 @@ In imperative logic code, the single-line format is allowed and often preferred 
 
 ### Line-Wrapping
 #### Function Declarations
-```swift
-`modifiers func name(formal arguments) { `//content` `}`
-`modifiers func name(formal arguments) -> result { `//content` `}`
-`modifiers func name<generic arguments>(formal arguments) throws -> result { `//content` `}`
-`modifiers func name<generic arguments>(formal arguments) throws -> result` `where` `generic constraints { `//content` `}`
-```
+Function declarations are wrapped when they exceed the maximum line length. The wrapping follows a consistent, cascading indentation style to maintain readability.
+
+##### Arguments and Closing Parenthesis
+When a function's argument list is wrapped, the following rules apply:
+* Each argument must be on its own line.
+* 
 
 Applying the rules above from left to right gives us the following line-wrapping:
 ```swift
