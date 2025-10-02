@@ -197,28 +197,28 @@ public func find<
 The examples below apply equally to `class`, `struct`, `enum`, `extension`, and `protocol` (with the obvious exception that all but the first do not have superclasses in their inheritance list, but they are otherwise structurally similar).
 
 ```swift
-class MyClass: MySuperclass,
+struct MyClass: MySuperclass,
                MyProtocol,
                SomeoneElsesProtocol,
                SomeFrameworkProtocol {
     // ...
 }
 
-class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
+struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
                                              MyContainerProtocol,
                                              SomeoneElsesContainerProtocol,
                                              SomeFrameworkContainerProtocol {
     // ...
 }
 
-class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
+struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
                                              MyContainerProtocol,
                                              SomeoneElsesContainerProtocol,
                                              SomeFrameworkContainerProtocol where BaseCollection: Collection {
     // ...
 }
 
-class MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
+struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
                                              MyContainerProtocol,
                                              SomeoneElsesContainerProtocol,
                                              SomeFrameworkContainerProtocol where BaseCollection: Collection,
