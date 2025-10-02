@@ -573,36 +573,36 @@ With the exception of tuple destructuring, every `let` or `var` statement (wheth
 
 !!! success "GOOD"
     ```swift
-    switch order {
-        case .ascending: print("Ascending")
-        case .descending: print("Descending")
-        case .same: print("Same")
+    switch self {
+        case .status: .congratulations(.status)
+        case .reward(let multiplier): "\(multiplier) \(String.congratulations(.rewards))"
+        case .coins(let value):  "\(value) \(String.congratulations(.coins))"
     }
     
-    switch order {
-    case .ascending:
-        print("This is a much longer statement that should be split")
-        log("Another statement inside the same case")
-    case .descending:
-        doSomething()
-        doSomethingElse()
-    case .same:
-        print("Same")
+    switch action {
+    case .appeared, .error:
+        return update(for: state)
+    case .selected(let id):
+        return changeSelected(for: state, id: id)
+    case .close:
+        coordinator.perform(.close)
     }
     ```
 !!! danger "AVOID"
     ```swift
-    switch order {
-        case .ascending:
-            print("Wrong extra indentation")
-        case .descending:
-            print("Also wrong")
+    switch action {
+        case .appeared, .error:
+            return update(for: state)
+        case .selected(let id):
+            return changeSelected(for: state, id: id)
+        case .close:
+            coordinator.perform(.close)
     }
     
-    switch order {
-    case .ascending:print("Ascending")
-    case .descending:print("Descending")
-    case .same:print("Same")
+    switch self {
+    case .status: .congratulations(.status)
+    case .reward(let multiplier): "\(multiplier) \(String.congratulations(.rewards))"
+    case .coins(let value):  "\(value) \(String.congratulations(.coins))"
     }
     ```
 
@@ -642,19 +642,30 @@ When a caseless enum is used as a namespace to group static constants, a plural 
 
 !!! success "GOOD"
     ```swift
-    // "Strings" is a logical group for string constants.
-    // "Images" is a collection of keys for images.
-    enum AppConstants {
-        enum Strings {
-            static let welcomeTitle = "Welcome!"
-            static let errorTitle = "Error"
+    enum Constants {
+    
+        enum Images: String, ImageKey {
+            case box
+            case congratulation
+            case coinsSpecial
+            case userPhotoPlaceholder
+            
+            var bundle: Bundle? { .module }
         }
     
-        enum Images {
-            static let mainIcon = "app_icon"
-            static let placeholder = "user_placeholder"
+        enum Strings {
+            
+            enum Levels: String, LevelsLocalizedKey {
+                case title = "levels.title"
+                case subtitle = "levels.subtitle"
+                case level = "levels.level"
+                case coinsTitle = "levels.coins_text"
+                case rewardsTitle = "levels.rewards_title"
+                case statusDescription = "levels.status_description"
+                case rewardDescription = "levels.reward_description"
+                case coinsDescription = "levels.coins_description"
+            }
         }
-    }
     ```
     
 ### Enum Cases
@@ -895,25 +906,25 @@ For clarity, initializer arguments that correspond directly to a stored property
 
 !!! success "GOOD"
     ```swift
-    public struct Person {
-        public let name: String
-        public let phoneNumber: String
-
-        public init(name: String, phoneNumber: String) {
-            self.name = name
-            self.phoneNumber = phoneNumber
+    public struct CongratulationsViewData {
+        public let user: User
+        public let rewards: [Reward]
+        
+        public init(user: User, rewards: [Reward]) {
+            self.user = user
+            self.rewards = rewards
         }
     }
     ```
 !!! danger "AVOID"
     ```swift
-    public struct Person {
-        public let name: String
-        public let phoneNumber: String
-
-        public init(name otherName: String, phoneNumber otherPhoneNumber: String) {
-            name = otherName
-            phoneNumber = otherPhoneNumber
+    public struct CongratulationsViewData {
+        public let user: User
+        public let rewards: [Reward]
+        
+        public init(user otherUser: User, rewards otheRrewards: [Reward]) {
+            user = otherUser
+            rewards = otheRrewards
         }
     }
     ```
@@ -1117,7 +1128,7 @@ Swift allows `enums`, `structs`, and `classes to be nested, so nesting is prefer
 
 !!! success "GOOD"
     ```swift
-    class Parser {
+    struct Parser {
         enum Error: Swift.Error {
             case invalidToken(String)
             case unexpectedEOF
@@ -1130,7 +1141,7 @@ Swift allows `enums`, `structs`, and `classes to be nested, so nesting is prefer
     ```
 !!! danger "AVOID"
     ```swift
-    class Parser {
+    struct Parser {
         func parse(text: String) throws {
             // ...
         }
