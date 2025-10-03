@@ -196,30 +196,30 @@ The examples below apply equally to `class`, `struct`, `enum`, `extension`, and 
 
 ```swift
 struct MyClass: MySuperclass,
-               MyProtocol,
-               SomeoneElsesProtocol,
-               SomeFrameworkProtocol {
+                MyProtocol,
+                SomeoneElsesProtocol,
+                SomeFrameworkProtocol {
     // ...
 }
 
 struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                                             MyContainerProtocol,
-                                             SomeoneElsesContainerProtocol,
-                                             SomeFrameworkContainerProtocol {
+                                              MyContainerProtocol,
+                                              SomeoneElsesContainerProtocol,
+                                              SomeFrameworkContainerProtocol {
     // ...
 }
 
 struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                                             MyContainerProtocol,
-                                             SomeoneElsesContainerProtocol,
-                                             SomeFrameworkContainerProtocol where BaseCollection: Collection {
+                                              MyContainerProtocol,
+                                              SomeoneElsesContainerProtocol,
+                                              SomeFrameworkContainerProtocol where BaseCollection: Collection {
     // ...
 }
 
 struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                                             MyContainerProtocol,
-                                             SomeoneElsesContainerProtocol,
-                                             SomeFrameworkContainerProtocol where BaseCollection: Collection,
+                                              MyContainerProtocol,
+                                              SomeoneElsesContainerProtocol,
+                                              SomeFrameworkContainerProtocol where BaseCollection: Collection,
                                                                                   BaseCollection.Element: Equatable,
                                                                                   BaseCollection.Element: SomeOtherProtocolOnlyUsedToForceLineWrapping {
     // ...
