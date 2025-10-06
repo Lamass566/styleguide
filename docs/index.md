@@ -13,14 +13,25 @@ Imports of individual declarations (struct, enum, class, etc.) are required over
 
 #### Placement and Formatting
 Import statements are the first non-comment tokens in a source file. They are never line-wrapped.
+Imports should be grouped and sorted, but closely related imports (e.g. a framework and its extension library) should be placed together. The standard grouping order is:
 
-Imports should be grouped and sorted. The standard grouping order is:
-
-* Apple frameworks (e.g., SwiftUI, Foundation)
-* Third-party modules (e.g., TheComposableArchitecture, Kingfisher)
-* Project-internal modules (e.g., AuthService, DesignSystem)
+* Apple frameworks (e.g., SwiftUI, Foundation, Combine)
+* Third-party modules (including extensions to Apple frameworks):
+- CombineExt(placed right after Combine)
+- Other libraries (e.g. Alamofire, Kingfisher)
+* Project-internal modules (e.g., AuthService, SomeCore):
+- Core modules first (Base, BaseUI, Shared)
+- Feature modules (AuthService, SomeCore)
+- Specific imports (import enum SomeViews.SomeViewAction)
 
 ```swift
+import Foundation
+import SwiftUI
+import Base
+import BaseUI
+import Combine
+import CombineExt
+import Shared
 import AppError
 import AuthService
 import SomeCore
@@ -56,18 +67,23 @@ The required order is as follows:
 * Private and Fileprivate Methods: Helper methods, often prefixed with private or fileprivate, which support the public interface.
 
 ```swift
-struct ProfileProgressView: View {
+public struct ProfileProgressView: View {
     typealias Action = () -> Void
     
-    let progress: Int
-    let action: Action?
+    private let progress: Int
+    private let action: Action?
     var buttonForegroundStyle: Color = .constant(.white)
+
+    public init(progress: Int, action: Action? = nil) {
+        self.progress = progress
+        self.action = action
+    }
     
-    var body: some View {
+    public var body: some View {
         //...
     }
     
-    func buttonForegroundStyle(_ color: Color) -> Self {
+    public func buttonForegroundStyle(_ color: Color) -> Self {
         //...
     }
     
@@ -130,21 +146,21 @@ While the compact, single-line form is permitted by the general rule, its applic
 
 In declarative UI code, readability is the highest priority. The structure of the code should mirror the structure of the UI itself. Therefore, single-line blocks are not allowed for UI components, as they can obscure the view hierarchy. Always use multi-line formatting for clarity.
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     HStack {
-        Text("Welcome").font(.title); Button("Log Out") { viewModel.logOut() }
+        Text(.constant(.title)).font(.constant(.boldTitle)); Button(.constant(.btnLogOut)) { viewModel.send(action: .logOut) }
     }
     ```
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     HStack {
-      Text("Welcome")
-          .font(.title)
+      Text(.constant(.title))
+          .font(.constant(.boldTitle))
 
-      Button("Log Out") {
-          viewModel.logOut()
+      Button(.constant(.btnLogOut)) {
+          viewModel.send(action: .logOut)
       }
     }
     ```
@@ -252,14 +268,11 @@ As with function declarations, if the function call terminates its enclosing sta
 ```swift
 let index = index(
     of: veryLongElementVariableName,
-    in: aCollectionOfElementsThatAlsoHappensToHaveALongName)
-```
-
-```swift
-let index = index(
-    of: veryLongElementVariableName,
     in: aCollectionOfElementsThatAlsoHappensToHaveALongName
 )
+
+let index = index(of: veryLongElementVariableName,
+                  in: aCollectionOfElementsThatAlsoHappensToHaveALongName)
 ```
 
 If the function call ends with a trailing closure and the closure’s signature must be wrapped, then place it on its own line and wrap the argument list in parentheses to distinguish it from the body of the closure below it.
@@ -277,14 +290,14 @@ someAsynchronousAction.execute(withDelay: howManySeconds, context: actionContext
 Beyond where required by the language or other style rules, and apart from literals and comments, a single Unicode space also appears in the following places **only**:
 1. Separating any reserved word starting a conditional or switch statement (such as `if`, `guard`, `while`, or `switch`) from the expression that follows it if that expression starts with an open parenthesis (`(`).
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     if (x == 0 && y == 0) || z == 0 {
         // ...
     }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     if(x == 0 && y == 0) || z == 0 {
         // ...
@@ -293,12 +306,12 @@ Beyond where required by the language or other style rules, and apart from liter
 
 2. Before any closing curly brace (`}`) that follows code on the same line, before any open curly brace (`{`), and after any open curly brace (`{`) that is followed by code on the same line.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let nonNegativeCubes = numbers.map { $0 * $0 * $0 }.filter { $0 >= 0 }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let nonNegativeCubes = numbers.map { $0 * $0 * $0 } .filter { $0 >= 0 }
     let nonNegativeCubes = numbers.map{$0 * $0 * $0}.filter{$0 >= 0}
@@ -308,14 +321,14 @@ Beyond where required by the language or other style rules, and apart from liter
 
 * The `=` sign used in assignment, initialization of variables/properties, and default arguments in functions.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     var x = 5
     func sum(_ numbers: [Int], initialValue: Int = 0) {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     var x=5
     func sum(_ numbers: [Int], initialValue: Int=0) {
@@ -324,13 +337,13 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 * The ampersand (`&`) in a protocol composition type.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     func sayHappyBirthday(to person: NameProviding & AgeProviding) {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     func sayHappyBirthday(to person: NameProviding&AgeProviding) {
         // ...
@@ -338,13 +351,13 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 * The operator symbol in a function declaring/implementing that operator.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     static func == (lhs: MyType, rhs: MyType) -> Bool {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     static func ==(lhs: MyType, rhs: MyType) -> Bool {
         // ...
@@ -352,13 +365,13 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 * The arrow (`->`) preceding the return type of a function.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     func sum(_ numbers: [Int]) -> Int {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     func sum(_ numbers: [Int])->Int {
         // ...
@@ -366,17 +379,17 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 **Exception:** There is no space on either side of the dot (`.`) used to reference value and type members.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let width = view.bounds.width
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let width = view . bounds . width
     ```
 **Exception:** There is no space on either side of the `..<` or `...` operators used in range expressions.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     for number in 1...5 {
         // ...
@@ -384,7 +397,7 @@ Beyond where required by the language or other style rules, and apart from liter
     let substring = string[index..<string.endIndex]
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     for number in 1 ... 5 {
         // ...
@@ -393,12 +406,12 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 4. After, but not before, the comma (`,`) in parameter lists and in tuple/array/dictionary literals.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let numbers = [1, 2, 3]
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let numbers = [1,2,3]
     let numbers = [1 ,2 ,3]
@@ -407,7 +420,7 @@ Beyond where required by the language or other style rules, and apart from liter
 5. After, but not before, the colon (`:`) in
 * Superclass/protocol conformance lists and generic constraints.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     struct HashTable: Collection {
         // ...
@@ -417,7 +430,7 @@ Beyond where required by the language or other style rules, and apart from liter
     }
     ```
     
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     struct HashTable : Collection {
         // ...
@@ -428,14 +441,14 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 * Function argument labels and tuple element labels.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let tuple: (x: Int, y: Int)
     func sum(_ numbers: [Int]) {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let tuple: (x:Int, y:Int)
     let tuple: (x : Int, y : Int)
@@ -448,53 +461,53 @@ Beyond where required by the language or other style rules, and apart from liter
     ```
 * Variable/property declarations with explicit types.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let number: Int = 5
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let number:Int = 5
     let number : Int = 5
     ```
 * Shorthand dictionary type names.
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     var nameAgeMap: [String: Int] = []
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     var nameAgeMap: [String:Int] = []
     var nameAgeMap: [String : Int] = []
     ```
 * Dictionary literals.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let nameAgeMap = ["Ed": 40, "Timmy": 9]
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let nameAgeMap = ["Ed":40, "Timmy":9]
     let nameAgeMap = ["Ed" : 40, "Timmy" : 9]
     ```
 6. At least two spaces before and exactly one space after the double slash (`//`) that begins an end-of-line comment.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let initialFactor = 2  // Warm up the modulator.
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let initialFactor = 2 //    Warm up the modulator.
     ```
 7. Outside, but not inside, the brackets of an array or dictionary literals and the parentheses of a tuple literal.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let numbers = [1, 2, 3]
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let numbers = [ 1, 2, 3 ]
     ```
@@ -504,7 +517,7 @@ Beyond where required by the language or other style rules, and apart from liter
 
 Horizontal alignment is forbidden except when writing obviously tabular data where omitting the alignment would be harmful to readability. In other cases (for example, lining up the types of stored property declarations in a `struct` or `class`), horizontal alignment is an invitation for maintenance problems if a new member is introduced that requires every other member to be realigned.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     struct DataPoint {
         var value: Int
@@ -512,7 +525,7 @@ Horizontal alignment is forbidden except when writing obviously tabular data whe
     }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     struct DataPoint {
         var value:        Int
@@ -535,20 +548,22 @@ A single blank line appears in the following locations:
 
 Parentheses are **not** used around the top-most expression that follows an `if`, `guard`, `while`, or `switch` keyword.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     if x == 0 {
         print("x is zero")
     }
+    
     if (x == 0 || y == 1) && z == 2 {
         print("...")
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     if (x == 0) {
         print("x is zero")
     }
+    
     if ((x == 0 || y == 1) && z == 2) {
         print("...")
     }
@@ -568,14 +583,14 @@ Local variables are declared close to the point at which they are first used (wi
 
 With the exception of tuple destructuring, every `let` or `var` statement (whether a property or a local variable) declares exactly one variable.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     var a = 5
     var b = 10
     let (quotient, remainder) = divide(100, 9)
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     var a = 5, b = 10
     ```
@@ -587,7 +602,7 @@ With the exception of tuple destructuring, every `let` or `var` statement (wheth
 - Use single-line case only if the body is short (≈ 40 characters or less).
 - The 40-character limit is approximate — developers may decide to switch to multi-line for better readability even with fewer characters.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     switch self {
         case .status: .congratulations(.status)
@@ -604,7 +619,7 @@ With the exception of tuple destructuring, every `let` or `var` statement (wheth
         coordinator.perform(.close)
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     switch action {
         case .appeared, .error:
@@ -629,23 +644,16 @@ When an enum is used to define a type with distinct states or values, its name m
 
 Think of it this way: the type is Direction, and a variable of that type can hold one of its values, such as .north. We don't write let myDirection: Directions.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     // An enum as a type representing one state out of several.
-    enum NetworkState {
-        case connected
-        case disconnected
-        case connecting
-    }
-    
-    // An enum as a type representing a specific choice.
-    enum PaymentMethod {
-        case creditCard(String)
-        case cash
-        case crypto(address: String)
+    public enum Status {
+        case achieved
+        case current
+        case unavailable
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Avoid plural names for type names.
     enum NetworkStates { ... }
@@ -656,7 +664,10 @@ The Exception: Plural for Namespaces
 
 When a caseless enum is used as a namespace to group static constants, a plural name is appropriate and often preferred because it describes the group or collection of items stored within.
 
-!!! success "GOOD"
+If the enum has more than three cases, treat it as a collection and use a plural name (ending with s).
+This improves readability and signals that the enum represents a group of values rather than a single type.
+
+!!! success "Збс"
     ```swift
     enum Constants {
     
@@ -683,12 +694,23 @@ When a caseless enum is used as a namespace to group static constants, a plural 
             }
         }
     ```
+
+!!! danger "Хуїта"
+    ```swift
+    // Too many cases, but still singular — harder to read
+    enum Image { 
+        case box
+        case congratulation
+        case coinsSpecial
+        case userPhotoPlaceholder
+    }
+```
     
 ### Enum Cases
 
 In general, there is only one `case` per line in an `enum`. The comma-delimited form may be used only when none of the cases have associated values or raw values, all cases fit on a single line, and the cases do not need further documentation because their meanings are obvious from their names.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     public enum Token {
         case comma
@@ -700,7 +722,7 @@ In general, there is only one `case` per line in an `enum`. The comma-delimited 
         case comma, semicolon, identifier
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     public enum Token {
         case comma
@@ -715,14 +737,14 @@ In general, there is only one `case` per line in an `enum`. The comma-delimited 
 
 When an `enum` case does not have associated values, empty parentheses are never present.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     public enum BinaryTree<Element> {
         indirect case node(element: Element, left: BinaryTree, right: BinaryTree)
         case empty
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     public enum BinaryTree<Element> {
         indirect case node(element: Element, left: BinaryTree, right: BinaryTree)
@@ -784,7 +806,7 @@ greetApathetically { "not John" }
 ```
 If a function call has multiple closure arguments, then **none** are called using trailing closure syntax; **all** are labeled and nested inside the argument list’s parentheses.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     UIView.animate(
         withDuration: 0.5,
@@ -804,7 +826,7 @@ If a function call has multiple closure arguments, then **none** are called usin
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     UIView.animate(
         withDuration: 0.5,
@@ -819,7 +841,7 @@ If a function has a single closure argument and it is the final argument, then i
 * As described above, labeled closure arguments must be used to disambiguate between two overloads with otherwise identical arguments lists.
 * Labeled closure arguments must be used in control flow statements where the body of the trailing closure would be parsed as the body of the control flow statement.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     Timer.scheduledTimer(timeInterval: 30, repeats: false) { timer in
         print("Timer done!")
@@ -828,7 +850,7 @@ If a function has a single closure argument and it is the final argument, then i
         process(firstActive)
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     Timer.scheduledTimer(timeInterval: 30, repeats: false, block: { timer in
         print("Timer done!")
@@ -839,12 +861,12 @@ If a function has a single closure argument and it is the final argument, then i
     }
     ```
 When a function called with trailing closure syntax takes no other arguments, empty parentheses (`()`) after the function name are **never** present.
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let squares = [1, 2, 3].map { $0 * $0 }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let squares = [1, 2, 3].map({ $0 * $0 })
     let squares = [1, 2, 3].map() { $0 * $0 }
@@ -852,17 +874,9 @@ When a function called with trailing closure syntax takes no other arguments, em
 
 ### Trailing Commas
 
-Trailing commas in array and dictionary literals are forbidden. The last element in a multi-line literal must not have a comma following it.
+Trailing commas in array and dictionary literals are required. The last element in a multi-line literal must have a comma following it.
 
-!!! success "GOOD"
-    ```swift
-    let configurationKeys = [
-        "bufferSize",
-        "compression",
-        "encoding"
-    ]
-    ```
-!!! danger "AVOID"
+!!! success "Збс"
     ```swift
     let configurationKeys = [
         "bufferSize",
@@ -870,25 +884,26 @@ Trailing commas in array and dictionary literals are forbidden. The last element
         "encoding",
     ]
     ```
-### Numeric Literals
-
-It is recommended but not required that long numeric literals (decimal, hexadecimal, octal, and binary) use the underscore (`_`) separator to group digits for readability when the literal has numeric value or when there exists a domain-specific grouping.
-
-Recommended groupings are three digits for decimal (thousands separators), four digits for hexadecimal, four or eight digits for binary literals, or value-specific field boundaries when they exist (such as three digits for octal file permissions).
-
-Do not group digits if the literal is an opaque identifier that does not have a meaningful numeric value.
+!!! danger "Хуїта"
+    ```swift
+    let configurationKeys = [
+        "bufferSize",
+        "compression",
+        "encoding"
+    ]
+    ```
 
 ### Attributes
 Parameterized attributes (such as `@availability(...)` or `@objc(...)`) are each written on their own line immediately before the declaration to which they apply, are lexicographically ordered, and are indented at the same level as the declaration.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     @available(iOS 9.0, *)
     public func coolNewFeature() {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     @available(iOS 9.0, *) public func coolNewFeature() {
         // ...
@@ -905,22 +920,21 @@ Naming conventions (such as prefixing a leading underscore) are only used in rar
 
 ### Identifiers
 
-In general, identifiers contain only 7-bit ASCII characters. Unicode identifiers are allowed if they have a clear and legitimate meaning in the problem domain of the code base (for example, Greek letters that represent mathematical concepts) and are well understood by the team who owns the code.
+In general, identifiers contain only 7-bit ASCII characters. Unicode characters are not allowed.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let smile = "😊"
     let deltaX = newX - previousX
-    let Δx = newX - previousX
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let 😊 = "😊"
     ```
 ### Initializers
 For clarity, initializer arguments that correspond directly to a stored property have the same name as the property. Explicit `self.` is used during assignment to disambiguate them.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     public struct CongratulationsViewData {
         public let user: User
@@ -932,7 +946,7 @@ For clarity, initializer arguments that correspond directly to a stored property
         }
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     public struct CongratulationsViewData {
         public let user: User
@@ -948,7 +962,7 @@ For clarity, initializer arguments that correspond directly to a stored property
 
 Static and class properties that return instances of the declaring type are **not** suffixed with the name of the type.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     public class UIColor {
         public class var red: UIColor {
@@ -962,7 +976,7 @@ Static and class properties that return instances of the declaring type are **no
         }
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     public class UIColor {
         public class var redColor: UIColor {
@@ -982,11 +996,11 @@ When a static or class property evaluates to a singleton instance of the declari
 
 Like other variables, global constants are `lowerCamelCase`. Hungarian notation, such as a leading `g` or `k`, is not used.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let secondsPerMinute = 60
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     let SecondsPerMinute = 60
     let kSecondsPerMinute = 60
@@ -994,51 +1008,38 @@ Like other variables, global constants are `lowerCamelCase`. Hungarian notation,
     let SECONDS_PER_MINUTE = 60
     ```
 
-### Compiler Warnings
-Code should compile without warnings when feasible. Any warnings that are able to be removed easily by the author must be removed.
-
-A reasonable exception is deprecation warnings, where it may not be possible to immediately migrate to the replacement API, or where an API may be deprecated for external users but must still be supported inside a library during a deprecation period.
-
 ### Properties
 The `get` block for a read-only computed property is omitted and its body is directly nested inside the property declaration.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
-    var totalCost: Int {
-        return items.sum { $0.cost }
-    }
+    var totalCost: Int { items.sum { $0.cost } }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     var totalCost: Int {
-        get {
-            return items.sum { $0.cost }
-        }
+        get {  items.sum { $0.cost } }
     }
     ```
 
-### Types with Shorthand Names
+### Arrays Initialization
+Arrays are initialized with shorthand literals [] whenever possible.
+The explicit form [Element]() is used only when required by the compiler, such as in generic contexts (e.g., inside reduce, map, or when type inference is ambiguous).
 
-Arrays, dictionaries, and optionals must always be written in their shorthand form whenever possible:
-* [Element] instead of Array<Element>
-* [Key: Value] instead of Dictionary<Key, Value>
-* Wrapped? instead of Optional<Wrapped>
-
-Exception: The long form is only allowed when the compiler requires it (e.g., Array<Element>.Index instead of [Element].Index).
-
-In func declarations, omit the return type Void entirely, since it is implied:
-```swift
-func doSomething() { }
-```
-In function types (such as closures), always write Void as the return type and () for empty parameter lists:
-```swift
-let callback: () -> Void
-```
-
-Never use the following forms:
-* func doSomething() -> Void { }
-* func doSomething() -> () { }
-* let callback: () -> ()
+!!! success "Збс"
+    ```swift
+    let numbers: [Int] = []
+    let names = ["Evan", "Baxter"]
+    
+    let result = values.reduce(into: [Int]()) { result, element in
+        result.append(element.id)
+    }
+    ```
+!!! danger "Хуїта"
+    ```swift
+    let numbers = [Int]() // use [] if type is known
+    let emptyNames: [String] = [String]() // redundant
+    ```
 
 ### Optional Types
 
@@ -1046,7 +1047,7 @@ Sentinel values are avoided when designing algorithms (for example, an “index�
 
 `Optional` is used to convey a non-error result that is either a value or the absence of a value. For example, when searching a collection for a value, not finding the value is still a **valid and expected** outcome, not an error.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     func index(of thing: Thing, in things: [Thing]) -> Int? {
         // ...
@@ -1058,7 +1059,7 @@ Sentinel values are avoided when designing algorithms (for example, an “index�
         // Didn't find it.
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     func index(of thing: Thing, in things: [Thing]) -> Int {
         // ...
@@ -1074,14 +1075,14 @@ Sentinel values are avoided when designing algorithms (for example, an “index�
 
 Conditional statements that test that an `Optional` is non-nil *but do not access the wrapped value* are written as comparisons to `nil`. The following example is clear about the programmer’s intent:
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     if value != nil {
         print("value was not nil")
     }
     ```
 This example, while taking advantage of Swift’s pattern matching and binding syntax, obfuscates the intent by appearing to unwrap the value and then immediately throw it away.
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     if let _ = value {
         print("value was not nil")
@@ -1090,23 +1091,10 @@ This example, while taking advantage of Swift’s pattern matching and binding s
 
 ### Access Levels
 
-Omitting an explicit access level is permitted on declarations. For top-level declarations, the default access level is `internal`. For nested declarations, the default access level is the lesser of `internal` and the access level of the enclosing declaration.
+Specifying an explicit access level at the file level on an extension is permitted.
+Each member of the extension should not specify an explicit access level if it matches the extension’s level.
 
-Specifying an explicit access level at the file level on an extension is forbidden. Each member of the extension has its access level specified if it is different than the default.
-
-!!! success "GOOD"
-    ```swift
-    extension String {
-        public var isUppercase: Bool {
-            // ...
-        }
-
-        public var isLowercase: Bool {
-            // ...
-        }
-    }
-    ```
-!!! danger "AVOID"
+!!! success "Збс"
     ```swift
     public extension String {
         var isUppercase: Bool {
@@ -1118,12 +1106,24 @@ Specifying an explicit access level at the file level on an extension is forbidd
         }
     }
     ```
+!!! danger "Хуїта"
+    ```swift
+    extension String {
+        public var isUppercase: Bool {
+            // ...
+        }
+
+        public var isLowercase: Bool {
+            // ...
+        }
+    }
+    ```
 
 ### Nesting and Namespacing
 
 Swift allows `enums`, `structs`, and `classes to be nested, so nesting is preferred (instead of naming conventions) to express scoped and hierarchical relationships among types when possible. For example, flag `enums or error types that are associated with a specific type are nested in that type.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     struct Parser {
         enum Error: Swift.Error {
@@ -1136,7 +1136,7 @@ Swift allows `enums`, `structs`, and `classes to be nested, so nesting is prefer
         }
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     struct Parser {
         func parse(text: String) throws {
@@ -1152,15 +1152,15 @@ Swift does not currently allow protocols to be nested in other types or vice ver
 
 Declaring an `enum` without cases is the canonical way to define a “namespace” to group a set of related declarations, such as constants or helper functions. This `enum` automatically has no instances and does not require that extra boilerplate code be written to prevent instantiation.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
-    enum Dimensions {
+    enum Dimension {
         static let tileMargin: CGFloat = 8
         static let tilePadding: CGFloat = 4
         static let tileContentSize: CGSize(width: 80, height: 64)
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     struct Dimensions {
         private init() {}
@@ -1171,27 +1171,10 @@ Declaring an `enum` without cases is the canonical way to define a “namespace�
     }
     ```
     
-### for-where Loops
-When the entirety of a for loop’s body would be a single if block testing a condition of the element, the test is placed in the where clause of the for statement instead.
-
-!!! success "GOOD"
-    ```swift
-    for item in collection where item.hasProperty {
-        // ...
-    }
-    ```
-!!! danger "AVOID"
-    ```swift
-    for item in collection {
-        if item.hasProperty {
-            // ...
-        }
-    }
-    ```
 ### fallthrough in switch Statements
 When multiple cases of a switch would execute the same statements, the case patterns are combined into ranges or comma-delimited lists. Multiple case statements that do nothing but fallthrough to a case below are not allowed.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     switch value {
     case 1:
@@ -1204,7 +1187,7 @@ When multiple cases of a switch would execute the same statements, the case patt
         break
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     switch value {
     case 1:
@@ -1232,7 +1215,7 @@ The placement of let and var keywords in a pattern depends on the number of valu
 
 This approach maintains clarity for simple, single-value cases while reducing verbosity and repetition in more complex cases with multiple values.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     switch serverResponse {
     case .success(let data):
@@ -1243,7 +1226,7 @@ This approach maintains clarity for simple, single-value cases while reducing ve
         break
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     switch serverResponse {
     case let .success(data):
@@ -1256,7 +1239,7 @@ This approach maintains clarity for simple, single-value cases while reducing ve
     ```
 Labels of tuple arguments and enum associated values are omitted when binding a value to a variable with the same name as the label.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     switch treeNode { 
         case .subtree(let left, let right): // ... 
@@ -1264,7 +1247,7 @@ Labels of tuple arguments and enum associated values are omitted when binding a 
     }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Including the labels adds redundant noise.
     switch treeNode {
@@ -1276,11 +1259,11 @@ Labels of tuple arguments and enum associated values are omitted when binding a 
 ### Tuple Patterns
 Assigning variables through a tuple pattern is only permitted if the left-hand side of the assignment is unlabeled.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let (a, b) = (y: 4, x: 5.0)
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Labels on the left-hand side resemble type annotations and can be confusing.
     let (x: a, y: b) = (y: 4, x: 5.0)
@@ -1292,7 +1275,7 @@ Assigning variables through a tuple pattern is only permitted if the left-hand s
 ### Numeric and String Literals
 When a literal is used to initialize a value of a type other than its default, specify the type explicitly.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     // These are explicitly typed.
     let x2: Int32 = 50
@@ -1308,7 +1291,7 @@ When a literal is used to initialize a value of a type other than its default, s
     let b = "ab" as Character
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Using initializer syntax can lead to misleading compiler errors or runtime errors.
 
@@ -1322,69 +1305,34 @@ When a literal is used to initialize a value of a type other than its default, s
     let c = Character("ab")
     ```
 
-### Trapping vs. Overflowing Arithmetic
-The standard (trapping-on-overflow) arithmetic operators (+, -, *) are used for most normal operations.
+### Optionals: Safe Mapping vs. Force Unwrapping
+For transforming optional values, always prefer safe mapping (map, flatMap) over force unwrapping (!) or unnecessary conditional nesting.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
-    //Overflow will not cause the balance to go negative.
-    let newBankBalance = oldBankBalance + recentHugeProfit
+    let optionalString: String? = "123" 
+    let optionalInt = optionalString.flatMap(Int.init)
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
-    //Overflow will cause the balance to wrap around, resulting in bad data.
-    let newBankBalance = oldBankBalance &+ recentHugeProfit
-    ```
-Masking operations are permitted in domains that use modular arithmetic, such as cryptography and hash functions.
+    let optionalString: String? = "123"
 
-!!! success "GOOD"
-    ```swift
-    //For hash values, the distribution of the bit pattern matters.
-    var hashValue: Int {
-        return foo.hashValue &+ 31 * (bar.hashValue &+ 31 &* baz.hashValue)
+    let optionalInt: Int?
+    
+    if optionalString != nil { 
+        optionalInt = Int(optionalString!)
+    } else { 
+        optionalInt = nil 
     }
     ```
+Use explicit unwrapping (!) only when the value is guaranteed to be non-nil by program logic, and a crash is acceptable in case of violation.
 
-!!! danger "AVOID"
-    ```swift
-    //This will trap unpredictably depending on the hash values.
-    var hashValue: Int {
-        return foo.hashValue + 31 * (bar.hashValue + 31 * baz.hashValue)
-    }
-    ```
-### Documentation Comments
-General Format
-
-Documentation comments are written using the triple slash (///). Javadoc-style block comments (/** ... */) are not permitted.
-
-!!! success "GOOD"
-    ```swift
-    /// Returns the numeric value of the given digit.
-    ///
-    /// - Parameters:
-    ///   - digit: The Unicode scalar whose numeric value should be returned.
-    ///   - radix: The radix used to compute the numeric value.
-    /// - Returns: The numeric value of the scalar.
-    func numericValue(of digit: UnicodeScalar, radix: Int = 10) -> Int {
-        // ...
-    }
-    ```
-
-!!! danger "AVOID"
-    ```swift
-    /**
-     * Returns the numeric value of the given digit.
-     */
-    func numericValue(of digit: UnicodeScalar, radix: Int = 10) -> Int {
-      // ...
-    }
-    ```
 ### Single-Sentence Summary
 
 Documentation comments begin with a brief single-sentence summary. Method summaries are verb phrases; property summaries are noun phrases.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     /// The background color of the view.
     var backgroundColor: UIColor
@@ -1395,7 +1343,7 @@ Documentation comments begin with a brief single-sentence summary. Method summar
     }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     /// This property is the background color of the view.
     var backgroundColor: UIColor
@@ -1411,7 +1359,7 @@ Prefer using higher-order functions like map, filter, reduce, and flatMap for co
 
 Furthermore, for transformations that simply access a property of an element, you can use the even more concise KeyPath expression (\.propertyName). This further improves readability by directly referencing the property being mapped.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift 
     // The intent—transforming and filtering—is immediately clear.
     let squaredEvens = numbers.map { $0 * $0 }.filter { $0 % 2 == 0 }
@@ -1420,7 +1368,7 @@ Furthermore, for transformations that simply access a property of an element, yo
     let userNames = users.map(\.name)
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift  
     // This imperative approach requires more code and mental overhead to understand. 
     var squaredEvens: [Int] = []
@@ -1436,7 +1384,7 @@ Prefer map and flatMap to perform transformations on optional values rather than
 
 Use map when your transformation function returns a non-optional value. Use flatMap when your transformation function returns an Optional value; this prevents creating a nested optional (e.g., Int??).
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     // 'map' is used because the transform returns a non-optional String.
     let optionalNumber: Int? = 42
@@ -1446,7 +1394,7 @@ Use map when your transformation function returns a non-optional value. Use flat
     let optionalString: String? = "123"
     let optionalInt = optionalString.flatMap { Int($0) }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Unnecessarily verbose for a simple transformation.
     let optionalNumber: Int? = 42
@@ -1471,7 +1419,7 @@ Names containing common acronyms and initialisms (such as URL, ID, API, or HTTP)
 
 This practice improves clarity by treating well-known acronyms as indivisible units, which is how developers mentally read them.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     var requestURL: URL
     let userID: Int
@@ -1482,7 +1430,7 @@ This practice improves clarity by treating well-known acronyms as indivisible un
     }
     ```
     
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Avoid mixed-case or partially-lowercased acronyms.
     var requestUrl: URL
@@ -1496,11 +1444,11 @@ This practice improves clarity by treating well-known acronyms as indivisible un
 
 ### Use Type Aliases for Clarity
 
-Actively use type aliases (typealias) to give simpler, more descriptive names to complex types. This is especially useful for tuples, closures, and generic types with multiple constraints. Using a type alias makes code more readable, self-documenting, and easier to maintain.
+Actively use type aliases (typealias) to give simpler, more descriptive names to complex types **only if the type is used more than once.** This is especially useful for tuples, closures, and generic types with multiple constraints. Using a type alias makes code more readable, self-documenting, and easier to maintain, but creating aliases for types used only once can introduce unnecessary indirection.
 
 A well-named type alias can express the purpose of a complex type, making function signatures and property declarations much clearer.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     // The type alias clearly defines the structure and purpose.
     typealias HTTPResponse = (data: Data?, response: URLResponse?, error: Error?)
@@ -1517,7 +1465,7 @@ A well-named type alias can express the purpose of a complex type, making functi
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // The complex, inline tuple makes the function signature hard to read.
     func handle(response: (data: Data?, response: URLResponse?, error: Error?)) {
@@ -1535,7 +1483,7 @@ You should omit the return keyword in functions, computed properties, and closur
 
 This practice leverages a modern Swift feature that reduces boilerplate and improves conciseness, making the code's intent clearer. 📜
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     // For a single-line computed property
     var isEnabled: Bool {
@@ -1556,7 +1504,7 @@ This practice leverages a modern Swift feature that reduces boilerplate and impr
         }
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // The return keyword is redundant here.
     var isEnabled: Bool {
@@ -1583,7 +1531,7 @@ When a ternary expression (? :) needs to be line-wrapped, a line break is insert
 
 This style ensures that all three parts of the expression—the condition, the true case, and the false case—are clearly separated and aligned, which greatly improves readability.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     let accessLevel = user.isAdministrator
         ? "Administrator"
@@ -1593,7 +1541,7 @@ This style ensures that all three parts of the expression—the condition, the t
         ? .primary
         : .secondary.withAlphaComponent(0.5)
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // Placing operators at the end of the line makes it harder to scan.
     let accessLevel = user.isAdministrator ?
@@ -1604,32 +1552,22 @@ This style ensures that all three parts of the expression—the condition, the t
     let color = isEnabled ? .primary
         : .secondary.withAlphaComponent(0.5)
     ```
-    
-### Abbreviations in Names
-Type names (classes, structs, protocols, enums) must be fully spelled out. Avoid abbreviations to make the API as clear and self-documenting as possible. A type's name should fully describe its purpose without requiring a reader to guess what an abbreviation stands for.
 
-However, property and local variable names may use common, contextually-clear abbreviations (such as btn, img, mgr, config). This avoids excessive verbosity within the implementation where the context is already established.
+### for-where Loops
+When the entirety of a for loop’s body would be a single if block testing a condition of the element, the test is placed in the where clause of the for statement instead.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
-    // The class name is fully spelled out for clarity.
-    struct UserProfile {
-        // Within the implementation, abbreviations for button color and manager are acceptable.
-        private var btnColor: Color
-        private let configManager: ConfigurationManager
-    
+    for item in collection where item.hasProperty {
         // ...
     }
     ```
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
-    // The class name is unclear due to abbreviations. What is "VC"? "Usr"? "Prof"?
-    struct UsrProfVC {
-        // The property name is unnecessarily long and verbose.
-        private var buttonBackgroundColor: Color
-        private let configurationManagerInstance: ConfigurationManager
-    
-        // ...
+    for item in collection {
+        if item.hasProperty {
+            // ...
+        }
     }
     ```
     
@@ -1638,7 +1576,7 @@ Avoid appending arbitrary numbers to the names of types such as classes, structs
 
 However, using numeric suffixes for properties or local variables is permissible when it is part of a well-defined, non-arbitrary sequence (e.g., coordinates, versioned assets, or mathematical components).
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
     struct LineSegment { 
         var point1: CGPoint 
@@ -1649,7 +1587,7 @@ However, using numeric suffixes for properties or local variables is permissible
     let themeColor2: Color
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
     // AVOID: Type names should not be numbered. This creates confusion
     // about the relationship between UserV1 and UserV2.
@@ -1658,34 +1596,37 @@ However, using numeric suffixes for properties or local variables is permissible
     class UserV2 { ... }
     ```
 
-### Parameter, Returns, and Throws Tags
+### Documentation Comments
+General Format
 
-Use the singular - Parameter tag for a single argument. Use the plural - Parameters tag with a nested list for multiple arguments.
+Documentation comments are written using the triple slash (///). Javadoc-style block comments (/** ... */) are not permitted.
 
-!!! success "GOOD"
+!!! success "Збс"
     ```swift
-    /// - Parameter command: The command to execute.
-    func execute(command: String) -> String { ... }
-
+    /// Returns the numeric value of the given digit.
+    ///
     /// - Parameters:
-    ///   - command: The command to execute.
-    ///   - stdin: The string to use as standard input.
-    func execute(command: String, stdin: String) -> String { ... }
+    ///   - digit: The Unicode scalar whose numeric value should be returned.
+    ///   - radix: The radix used to compute the numeric value.
+    /// - Returns: The numeric value of the scalar.
+    func numericValue(of digit: UnicodeScalar, radix: Int = 10) -> Int {
+        // ...
+    }
     ```
 
-!!! danger "AVOID"
+!!! danger "Хуїта"
     ```swift
-    // Using the plural form for a single parameter.
-    /// - Parameters:
-    ///   - command: The command to execute.
-    func execute(command: String) -> String { ... }
-
-    // Using the singular form multiple times.
-    /// - Parameter command: The command to execute.
-    /// - Parameter stdin: The string to use as standard input.
-    func execute(command: String, stdin: String) -> String { ... }
+    /**
+     * Returns the numeric value of the given digit.
+     */
+    func numericValue(of digit: UnicodeScalar, radix: Int = 10) -> Int {
+      // ...
+    }
     ```
-    Of course. Here is a new rule formatted in the style of the provided document, ready to be added to the Programming Practices section.
+### Compiler Warnings
+Code should compile without warnings when feasible. Any warnings that are able to be removed easily by the author must be removed.
+
+A reasonable exception is deprecation warnings, where it may not be possible to immediately migrate to the replacement API, or where an API may be deprecated for external users but must still be supported inside a library during a deprecation period.
 
 ### Special Escape Sequences
 
