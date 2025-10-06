@@ -87,7 +87,7 @@ When a type has multiple initializers or subscripts, or a file/type has multiple
 
 ### Column Limit
 
-Swift code has a column limit of 200 characters. Except as noted below, any line that would exceed this limit must be line-wrapped as described in [Line-Wrapping](#line-wrapping).
+Swift code has a column limit of 110 characters. Except as noted below, any line that would exceed this limit must be line-wrapped as described in [Line-Wrapping](#line-wrapping).
 
 **Exceptions:**
 * Lines where obeying the column limit is not possible without breaking a meaningful unit of text that should not be broken (for example, a long URL in a comment).
@@ -202,26 +202,44 @@ struct MyClass: MySuperclass,
     // ...
 }
 
-struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                                              MyContainerProtocol,
-                                              SomeoneElsesContainerProtocol,
-                                              SomeFrameworkContainerProtocol {
+struct MyContainer<
+    ViewModel: BaseViewModel
+>: MyContainerSuperclass,
+   MyContainerProtocol,
+   SomeoneElsesContainerProtocol,
+   SomeFrameworkContainerProtocol {
     // ...
 }
 
-struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                                              MyContainerProtocol,
-                                              SomeoneElsesContainerProtocol,
-                                              SomeFrameworkContainerProtocol where BaseCollection: Collection {
+struct MyContainer<
+    ViewModel: BaseViewModel
+>: MyContainerSuperclass,
+   MyContainerProtocol,
+   SomeoneElsesContainerProtocol,
+   SomeFrameworkContainerProtocol where BaseCollection: Collection {
     // ...
 }
 
-struct MyContainer<ViewModel: BaseViewModel>: MyContainerSuperclass,
-                                              MyContainerProtocol,
-                                              SomeoneElsesContainerProtocol,
-                                              SomeFrameworkContainerProtocol where BaseCollection: Collection,
-                                                                                  BaseCollection.Element: Equatable,
-                                                                                  BaseCollection.Element: SomeOtherProtocolOnlyUsedToForceLineWrapping {
+struct MyContainer<
+    ViewModel: BaseViewModel
+>: MyContainerSuperclass,
+   MyContainerProtocol,
+   SomeoneElsesContainerProtocol,
+   SomeFrameworkContainerProtocol where BaseCollection: Collection,
+                                        BaseCollection.Element: Equatable,
+                                        BaseCollection.Element: SomeOtherProtocolOnlyUsedToForceLineWrapping {
+    // ...
+}
+
+struct MyContainer<
+    ViewModel: BaseViewModel
+>: MyContainerSuperclass,
+   MyContainerProtocol,
+   SomeoneElsesContainerProtocol,
+   SomeFrameworkContainerProtocol
+where BaseCollection: Collection,
+      BaseCollection.Element: Equatable,
+      BaseCollection.Element: SomeOtherProtocolOnlyUsedToForceLineWrapping {
     // ...
 }
 ```
